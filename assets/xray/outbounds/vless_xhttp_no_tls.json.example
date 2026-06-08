@@ -20,7 +20,7 @@
     "security": "none",
     "xhttpSettings": {
       "path": "?",
-      "host": ["?"],
+      "host": "?",
       "mode": "auto"
     }
   }

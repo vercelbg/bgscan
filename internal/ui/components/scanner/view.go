@@ -54,11 +54,7 @@ func (m *Model) renderProgress(idx int) string {
 
 // renderStatsRow builds the statistics row.
 func (m *Model) renderStatsRow(p engine.Progress) string {
-
-	left := p.Total - p.Processed
-	if left < 0 {
-		left = 0
-	}
+	left := max(p.Total-p.Processed, 0)
 
 	return lipgloss.JoinHorizontal(
 		lipgloss.Left,
@@ -124,4 +120,3 @@ func (m *Model) estimateRemaining(p engine.Progress) string {
 
 	return fmt.Sprintf("estimated remaining: %v", left)
 }
-

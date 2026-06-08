@@ -32,9 +32,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		if msg.String() == tea.KeyCtrlT.String() {
-			dumpGoroutines()
-		}
+		// dump Goroutine for DebugInfo
+		// if msg.String() == tea.KeyCtrlT.String() {
+		// 	dumpGoroutines()
+		// }
 
 		// Overlay back/quit handling
 		if len(m.layers) > 0 {
@@ -136,10 +137,10 @@ func dumpGoroutines() {
 	}
 
 	dump := buf.String()
-	lines := strings.Split(dump, "\n")
+	lines := strings.SplitSeq(dump, "\n")
 
 	// Filter lines with suspicious wait states
-	for _, line := range lines {
+	for line := range lines {
 		if strings.Contains(line, "[chan receive]") ||
 			strings.Contains(line, "[chan send]") ||
 			strings.Contains(line, "[select]") ||
@@ -148,7 +149,4 @@ func dumpGoroutines() {
 			logger.DebugInfo("%s", line)
 		}
 	}
-
-	// Full dump for detailed analysis
-	logger.DebugDump("goroutines_full", dump)
 }

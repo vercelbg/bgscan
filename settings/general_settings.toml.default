@@ -27,45 +27,44 @@ stop_after_found = 0
 #   N   = read at most N IPs
 max_ips_to_test = 0
 
-# Enable verbose logging for debugging.
-# When true, detailed internal events, worker activity,
-# and pipeline diagnostics are printed.
-verbose = true
-
+# Enable IP shuffling to randomize target order. 
+# This prevents slamming the same subnet/network block and avoids triggering firewall alerts.
+shuffled = true
 
 # =====================================================================
-# Chain Execution Mode
+# Pipeline Execution Mode
 # =====================================================================
 
-# chain_mode defines how multi-stage scanning is executed.
+# pipeline_mode defines how multi-stage scanning is executed.
 #
 # Available modes:
 #
-#   "simple"   → Sequential, disk-based chain.
-#                Each stage waits for the previous one to finish.
-#                Lowest RAM usage, but slowest due to disk I/O.
+#   "sequential" → Sequential, disk-based chain.
+#                  Each stage waits for the previous one to finish.
+#                  Lowest RAM usage, but slowest due to disk I/O.
 #
-#   "parallel" → All stages run simultaneously and stream IPs between
-#                stages using buffered channels. Highest throughput.
-#                Ideal for real-time scanning and large datasets.
+#   "streaming"  → All stages run simultaneously and stream IPs between
+#                  stages using buffered channels. Highest throughput.
+#                  Ideal for real-time scanning and large datasets.
 #
-#   "pipeline" → Batch-based hybrid model. IPs are processed in batches,
-#                and each batch goes through all stages sequentially.
-#                More predictable memory usage than "parallel".
-#                Good when stages have different performance costs.
+#   "batch"      → Batch-based hybrid model. IPs are processed in batches,
+#                  and each batch goes through all stages sequentially.
+#                  More predictable memory usage than "streaming".
+#                  Good when stages have different performance costs.
 #
 # Example:
-#   chain_mode = "parallel"
+#   pipeline_mode = "streaming"
 #
-# Default: "simple"
-chain_mode = "parallel"
+# Default: "sequential"
+pipeline_mode = "streaming"
 
+# MaxIPsPerStage: the maximum number of IPs a stage can hold in chain mode.
+# When this limit is reached, the previous stage will be blocked
+# until space becomes available. This is a fixed hard cap
+max_ips_per_stage = 100000 
 
-# Maximum number of tasks each stage can buffer in chain mode.
-# The capacity equals: worker_count * channel_buffer_multiple.
-# Example: if a stage has 30 workers and channel_buffer_multiple = 5,
-# the stage can hold up to 150 tasks from the previous stage.
-# When this limit is reached, the previous stage is blocked and must
-# wait until buffer space becomes available.
-channel_buffer_multiple = 5
+# batch_size: number of IPs per batch in pipeline mode.
+# Only applies when chain_mode = "pipeline".
+# Example: N → each batch of N IPs goes through all stages sequentially.
+batch_size = 1000
 

@@ -1,7 +1,7 @@
 package result
 
 import (
-	"bgscan/internal/core/filemanager"
+	"bgscan/internal/core/fileutil"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -56,7 +56,7 @@ func GetResultTypeFiles(searchType ResultType) ([]ResultFile, error) {
 			}
 
 			results = append(results, ResultFile{
-				Name:        filemanager.StripExt(name),
+				Name:        fileutil.StripExt(name),
 				SizeBytes:   info.Size(),
 				CreatedTime: info.ModTime(),
 				Type:        d.rType,
@@ -87,7 +87,7 @@ func ReadResultFileIPs(path string) (ResultFile, error) {
 	}
 
 	return ResultFile{
-		Name:        filemanager.StripExt(info.Name()),
+		Name:        fileutil.StripExt(info.Name()),
 		SizeBytes:   info.Size(),
 		CreatedTime: info.ModTime(),
 		Type:        ResultTypeFromPath(path),
@@ -100,7 +100,7 @@ func ReadResultFileIPs(path string) (ResultFile, error) {
 // while safely stripping any internal absolute or relative path segments.
 func NormalizeResultFileName(name string) string {
 	baseName := filepath.Base(name)
-	if !filemanager.HasExt(baseName, ".csv") {
+	if !fileutil.HasExt(baseName, ".csv") {
 		return baseName + ".csv"
 	}
 	return baseName

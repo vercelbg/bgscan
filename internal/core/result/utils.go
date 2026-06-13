@@ -1,7 +1,7 @@
 package result
 
 import (
-	"bgscan/internal/core/filemanager"
+	"bgscan/internal/core/fileutil"
 	"bufio"
 	"encoding/csv"
 	"os"
@@ -57,7 +57,7 @@ func createDeltaFile(resultPath string, bufferSize int) (
 	dir := filepath.Dir(resultPath)
 
 	// Ensure result directory exists
-	dir, err := filemanager.GetOrCreateBaseDir(dir)
+	dir, err := fileutil.GetOrCreateBaseDir(dir)
 	if err != nil {
 		return nil, nil, nil, "", err
 	}

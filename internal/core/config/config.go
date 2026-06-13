@@ -4,7 +4,7 @@
 package config
 
 import (
-	"bgscan/internal/core/filemanager"
+	"bgscan/internal/core/fileutil"
 	"fmt"
 	"path/filepath"
 	"sync"
@@ -76,7 +76,7 @@ const (
 
 // configPath returns the fully‑qualified path for a settings file.
 func configPath(filename string) (string, error) {
-	base, err := filemanager.GetCurrentPath()
+	base, err := fileutil.GetCurrentPath()
 	if err != nil {
 		return "", err
 	}
@@ -95,7 +95,7 @@ func loadConfig[T any](filename string, cfg *T, def *T, set func(*T)) error {
 		return err
 	}
 
-	if err := filemanager.GetTOMLFileOrDefault(path, cfg, def); err != nil {
+	if err := fileutil.GetTOMLFileOrDefault(path, cfg, def); err != nil {
 		return fmt.Errorf("load config %s: %w", filename, err)
 	}
 
@@ -110,7 +110,7 @@ func saveConfig[T any](filename string, cfg *T, set func(*T)) error {
 		return err
 	}
 
-	if err := filemanager.WriteTOMLFile(path, cfg); err != nil {
+	if err := fileutil.WriteTOMLFile(path, cfg); err != nil {
 		return fmt.Errorf("save config %s: %w", filename, err)
 	}
 

@@ -1,7 +1,7 @@
 package result
 
 import (
-	"bgscan/internal/core/filemanager"
+	"bgscan/internal/core/fileutil"
 	"bufio"
 	"encoding/csv"
 	"fmt"
@@ -50,7 +50,7 @@ func mergeResults(resultPath string, ips []IPScanResult) error {
 		return e
 	}
 
-	if filemanager.CheckFileExists(resultPath) {
+	if fileutil.CheckFileExists(resultPath) {
 		if err := mergeWithExisting(resultPath, ips, cw); err != nil {
 			return cleanup(err)
 		}

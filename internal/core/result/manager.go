@@ -1,7 +1,7 @@
 package result
 
 import (
-	"bgscan/internal/core/filemanager"
+	"bgscan/internal/core/fileutil"
 	"bgscan/internal/logger"
 	"context"
 	"sync"
@@ -160,7 +160,7 @@ func (w *Writer) flush() error {
 //
 // This is useful for callers who want to verify that output has been produced.
 func (w *Writer) GetResultPath() string {
-	if filemanager.CheckFileExists(w.resultPath) {
+	if fileutil.CheckFileExists(w.resultPath) {
 		return w.resultPath
 	}
 	return ""

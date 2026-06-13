@@ -7,7 +7,7 @@ import (
 	"sort"
 	"time"
 
-	"bgscan/internal/core/filemanager"
+	"bgscan/internal/core/fileutil"
 )
 
 // Directory where IP list files are stored.
@@ -23,7 +23,7 @@ type IPFileInfo struct {
 
 // getBaseDir resolves the absolute directory where IP lists are stored.
 func getBaseDir() (string, error) {
-	base, err := filemanager.GetCurrentPath()
+	base, err := fileutil.GetCurrentPath()
 	if err != nil {
 		return "", err
 	}
@@ -38,10 +38,10 @@ func ListIPFiles() ([]IPFileInfo, error) {
 		return nil, err
 	}
 
-	files, err := filemanager.ListFiles(
+	files, err := fileutil.ListFiles(
 		dir,
 		func(name string, _ os.FileInfo) bool {
-			return filemanager.HasExt(name, ".csv")
+			return fileutil.HasExt(name, ".csv")
 		},
 	)
 	if err != nil {
@@ -52,7 +52,7 @@ func ListIPFiles() ([]IPFileInfo, error) {
 
 	for _, f := range files {
 		out = append(out, IPFileInfo{
-			Name:      filemanager.StripExt(f.Name),
+			Name:      fileutil.StripExt(f.Name),
 			Path:      f.Path,
 			Size:      f.Info.Size(),
 			CreatedAt: f.Info.ModTime(),
@@ -84,7 +84,7 @@ func GetIPFileInfo(nameOrPath string) (IPFileInfo, error) {
 		}
 
 		name := nameOrPath
-		if !filemanager.HasExt(name, ".csv") {
+		if !fileutil.HasExt(name, ".csv") {
 			name += ".csv"
 		}
 
@@ -104,7 +104,7 @@ func GetIPFileInfo(nameOrPath string) (IPFileInfo, error) {
 	}
 
 	return IPFileInfo{
-		Name:      filemanager.StripExt(filepath.Base(fullPath)),
+		Name:      fileutil.StripExt(filepath.Base(fullPath)),
 		Path:      fullPath,
 		Size:      info.Size(),
 		CreatedAt: info.ModTime(),
@@ -118,7 +118,7 @@ func GetIPFilePath(name string) (string, error) {
 		return "", err
 	}
 
-	if !filemanager.HasExt(name, ".csv") {
+	if !fileutil.HasExt(name, ".csv") {
 		name += ".csv"
 	}
 

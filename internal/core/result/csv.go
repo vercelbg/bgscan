@@ -1,14 +1,14 @@
 package result
 
 import (
-	"bgscan/internal/core/filemanager"
+	"bgscan/internal/core/fileutil"
 	"net"
 	"strings"
 	"time"
 )
 
 // csvConfig defines CSV parsing/dumping options.
-var csvConfig = filemanager.CSVConfig{Comma: ','}
+var csvConfig = fileutil.CSVConfig{Comma: ','}
 
 // ParseRecord converts a CSV record to an IPScanResult.
 // It returns false if the record is invalid or cannot be parsed.
@@ -62,7 +62,7 @@ func (r IPScanResult) ToRecord() []string {
 
 // ReadCSV streams a CSV file and applies the provided function to each valid result.
 func ReadCSV(path string, fn func(IPScanResult) error) error {
-	return filemanager.StreamCSV(path, csvConfig, func(rec []string) error {
+	return fileutil.StreamCSV(path, csvConfig, func(rec []string) error {
 		result, ok := ParseRecord(rec)
 		if !ok {
 			return nil // skip invalid records
@@ -74,7 +74,7 @@ func ReadCSV(path string, fn func(IPScanResult) error) error {
 // StreamWriteResults streams results to a CSV file.
 // It receives a function that itself accepts a function to write each result.
 func StreamWriteResults(path string, fn func(func(IPScanResult) error) error) error {
-	return filemanager.StreamWriteCSV(path, csvConfig, func(write func([]string) error) error {
+	return fileutil.StreamWriteCSV(path, csvConfig, func(write func([]string) error) error {
 		return fn(func(r IPScanResult) error {
 			return write(r.ToRecord())
 		})

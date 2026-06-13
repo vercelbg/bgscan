@@ -1,13 +1,13 @@
 package result
 
 import (
-	"bgscan/internal/core/filemanager"
+	"bgscan/internal/core/fileutil"
 	"io"
 )
 
 // LoadResultIP streams valid scan results from CSV into a channel.
 func LoadResultIP(path string, out chan<- IPScanResult) error {
-	return filemanager.StreamCSV(path, csvConfig, func(rec []string) error {
+	return fileutil.StreamCSV(path, csvConfig, func(rec []string) error {
 		r, ok := ParseRecord(rec)
 		if !ok {
 			return nil

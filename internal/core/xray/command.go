@@ -1,7 +1,7 @@
 package xray
 
 import (
-	"bgscan/internal/core/filemanager"
+	"bgscan/internal/core/fileutil"
 	"bgscan/internal/core/process"
 	"context"
 	"fmt"
@@ -44,7 +44,7 @@ func XrayVersion() (string, error) {
 // If the configuration is invalid, the error returned will contain
 // the full output produced by Xray to help diagnose the issue.
 func ValidateConfig(configPath string) error {
-	if !filemanager.CheckFileExists(configPath) {
+	if !fileutil.CheckFileExists(configPath) {
 		return fmt.Errorf("config file does not exist: %s", configPath)
 	}
 
@@ -57,8 +57,7 @@ func ValidateConfig(configPath string) error {
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
-		msg := fmt.Sprintf("xray config validation failed: %s", output)
-		return fmt.Errorf(msg)
+		return fmt.Errorf("xray config validation failed: %s", output)
 	}
 
 	return nil
@@ -73,7 +72,7 @@ func ValidateConfig(configPath string) error {
 // context is canceled, the Xray process will be terminated automatically.
 func StartXray(ctx context.Context, configPath string) (*process.Process, error) {
 
-	if !filemanager.CheckFileExists(configPath) {
+	if !fileutil.CheckFileExists(configPath) {
 		return nil, fmt.Errorf("config file does not exist: %s", configPath)
 	}
 

@@ -193,7 +193,7 @@ func (m *Model) mergeBatch() {
 		m.results[i] = append(m.results[i], newBatch...)
 
 		sort.Slice(m.results[i], func(a, b int) bool {
-			return m.results[i][a].Latency < m.results[i][b].Latency
+			return m.results[i][a].Less(m.results[i][b])
 		})
 
 		if len(m.results[i]) > m.maxIPs {

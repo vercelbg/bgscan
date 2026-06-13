@@ -112,7 +112,7 @@ func (m *Model) statusText() string {
 // estimateRemaining formats the ETA text.
 func (m *Model) estimateRemaining(p engine.Progress) string {
 
-	left := time.Until(p.EstimatedEnd).Truncate(time.Second)
+	left := p.ETA.Truncate(time.Second)
 
 	if left <= 0 {
 		return "estimating remaining time..."

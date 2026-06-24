@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-const AppVersion = "2.3.0-beta"
+const AppVersion = "2.4.0"
 
 // ============================================================================
 // Singleton

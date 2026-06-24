@@ -32,10 +32,11 @@ set -euo pipefail
 
 OS="${1:-linux}"
 ARCH="${2:-all}"
-PROJECT_DIR="${3:-$PWD}"
+PROJECT_DIR="$(cd "${3:-$PWD}" && pwd)"
 DEST_DIR="$PROJECT_DIR/dist"
 ROOT_DIR="$PROJECT_DIR"
-INSTALLER="$ROOT_DIR/install-builder.sh"
+PROJECT_DIR="$(cd "${3:-$PWD}" && pwd)"
+INSTALLER="$ROOT_DIR/scripts/install-builder.sh"
 BUILDER="$ROOT_DIR/bgscan-builder"
 SCRIPT_NAME="$(basename "$0")"
 START_TIME=$(date +%s)
@@ -219,7 +220,6 @@ run_release() {
 # ==============================================================================
 # POST PROCESS: ZIP ONLY (CLEAN OUTPUT)
 # ==============================================================================
-
 package_artifacts() {
   log "Packaging artifacts (zip-only output)"
 
@@ -227,23 +227,22 @@ package_artifacts() {
     fail "Failed to enter dist directory: $DEST_DIR"
 
   local count=0
-  for file in *; do
-    [ -f "$file" ] || continue
-    local zip_name="${file}.zip"
 
-    info "Compressing: $file -> $zip_name"
-    zip -q "$zip_name" "$file" ||
-      fail "Failed to zip $file"
+  for item in *; do
+    [ -e "$item" ] || continue
 
-    rm -f "$file"
+    local zip_name="${item}.zip"
+
+    info "Compressing: $item -> $zip_name"
+
+    zip -rq "$zip_name" "$item" ||
+      fail "Failed to zip $item"
+
+    rm -rf "$item"
     count=$((count + 1))
   done
 
-  if [ "$count" -eq 0 ]; then
-    warn "No raw artifacts found to package in $DEST_DIR"
-  else
-    success "Packaged ${count} artifact(s) into zip archives"
-  fi
+  success "Packaged ${count} artifact(s)"
 }
 
 # ==============================================================================

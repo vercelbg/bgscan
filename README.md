@@ -1,327 +1,185 @@
-# 🚀 bgscan
+<div align="center">
 
-> Ultra‑fast multi‑protocol scanner with a modular chained engine and interactive BubbleTea terminal UI.  
-> Designed for developers and researchers who need speed, flexibility, and a modern scanning experience.
+<br/>
 
-**bgscan** is a high‑performance scanning engine written in Go. It can run **multiple protocols in parallel** and **chain protocol stages** to build advanced detection workflows.  
-It features an interactive **BubbleTea UI**, a modular execution pipeline, and an asset‑driven architecture that makes it easy to extend, customize, and integrate with external tools such as **Xray**, **DNSTT**, and **Slipstream**.
+```
+██████╗  ██████╗ ███████╗ ██████╗ █████╗ ███╗   ██╗
+██╔══██╗██╔════╝ ██╔════╝██╔════╝██╔══██╗████╗  ██║
+██████╔╝██║  ███╗███████╗██║     ███████║██╔██╗ ██║
+██╔══██╗██║   ██║╚════██║██║     ██╔══██║██║╚██╗██║
+██████╔╝╚██████╔╝███████║╚██████╗██║  ██║██║ ╚████║
+╚═════╝  ╚═════╝ ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝
+```
 
-Built for performance, clarity, and extensibility.
+**Blazing-fast multi-protocol scanner with modular chain architecture**
 
----
+<br/>
 
-![Go](https://img.shields.io/badge/Go-1.25.4+-00ADD8?logo=go&logoColor=white)
-![Platform](https://img.shields.io/badge/platform-linux%20%7C%20windows%20%7C%20macOS-lightgrey)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![UI](https://img.shields.io/badge/UI-BubbleTea-ff69b4)
-![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
+[![Go Version](https://img.shields.io/badge/Go-1.26.3+-00ADD8?style=flat-square&logo=go&logoColor=white)](https://go.dev/)
+[![License](https://img.shields.io/badge/License-MIT-6366f1?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20|%20Windows%20|%20macOS%20|%20Termux-64748b?style=flat-square)](https://github.com/MohsenBg/bgscan/releases)
+[![UI](https://img.shields.io/badge/UI-BubbleTea%20TUI-ec4899?style=flat-square)](https://github.com/charmbracelet/bubbletea)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-22c55e?style=flat-square)](https://github.com/MohsenBg/bgscan/releases/latest)
 
----
+<br/>
 
-![bgscan](./image/bgscan.png)
+[📦 Installation](#-installation) · [📚 Documentation](#-documentation) · [🔹 Protocols](#-supported-protocols) · [💖 Support](#-support--donate)
 
-# 📌 What is bgscan?
-
-**bgscan** is a modular, multi‑protocol scanning engine with:
-
-- ⚡ Concurrent pipeline architecture
-- 🧠 Smart protocol detection & fallback
-- 🌐 DNS tunneling & advanced DNS querying
-- 🔐 Xray core integration
-- 🧩 Asset‑driven extensibility
-- 🎛 Interactive terminal UI (BubbleTea)
-- 📦 Clean, validated config system
-- 🗂 Robust result management & crash‑safe merging
-- 🖥 Cross‑platform support
-
-Ideal for developers, researchers, and power users who need a flexible scanner with a modern TUI.
+<br/>
 
 ---
 
-# ✨ Features
+</div>
 
-## 🔹 Core Engine
+## About bgscan
 
-- Worker‑pool–based scanning
-- Stage / chain execution model
-- Context‑aware cancellation
-- Bounded, controllable concurrency
-- Retry & fallback strategies
-- IPv4 / IPv6 CIDR streaming
-- Crash‑safe, atomic result merging
+**bgscan** is a high-performance scanning engine written in **Go**.
+It runs multiple protocols concurrently and chains scan stages together to build advanced detection and reconnaissance workflows.
+
+Built for developers and researchers who demand **speed, flexibility, and a modern scanning experience**.
+
+---
+
+<img width="1552" height="841" alt="bgscan-ui" src="https://github.com/user-attachments/assets/08a50bc0-186d-45a4-8c27-4bb52a2041ee" />
+
+---
+
+## ✨ Key Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 🔗 Smart Chaining
+Chain multiple scan stages with `Stream`, `Sequential`, and `Batch Size` execution modes for complete control over your data pipeline.
+
+</td>
+<td width="50%">
+
+### 🖥️ Interactive TUI
+A fully interactive **Bubble Tea** terminal UI — scan, monitor, and manage results without ever opening a browser.
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 📡 Broad Protocol Support
+From ICMP and TCP to DNS Tunnel, Slipstream, and Xray — all in one tool.
+
+</td>
+<td width="50%">
+
+### 💾 Save & Replay
+Persist scan results and run new scans directly against previously saved data.
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🛰️ Xray Integration
+Full support for saving, managing, and validating Xray outbounds.
+
+</td>
+<td width="50%">
+
+### 🌐 Advanced DNS
+DNS Tunnel support with a fallback mechanism for complex resolution scenarios.
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 🔹 Supported Protocols
 
-| Protocol   | Description                         |
-| ---------- | ----------------------------------- |
-| ICMP       | Ping‑based detection                |
-| TCP        | TCP handshake scan                  |
-| HTTP       | HTTP response validation            |
-| DNS        | Advanced DNS querying with fallback |
-| DNSTT      | DNS tunnel transport                |
-| Slipstream | Slipstream probing                  |
-| Xray       | Xray outbound verification          |
+| Protocol | Layer | Description |
+|:--------:|:-----:|-------------|
+| **ICMP** | 3 | Host discovery and reachability via Ping |
+| **TCP** | 4 | Connection scanning and TCP handshake validation |
+| **HTTP** | 7 | Full HTTP/1.1 and HTTP/2 support *(no QUIC / HTTP/3)* |
+| **TLS** | 7 | TLS 1.0 through TLS 1.3 |
+| **DNS** | 7 | Advanced DNS queries with fallback mechanism |
+| **DNSTT** | 7 | DNS Tunnel validation *(SOCKS only, no auth)* |
+| **Slipstream** | 7 | Slipstream validation *(SOCKS only, no auth)* |
+| **Xray** | 7 | Xray outbound validation and testing |
 
 ---
 
-## 🔹 BubbleTea UI
+## 📦 Installation
 
-Modern interactive terminal interface:
+### Automatic (Recommended)
 
-- Multi‑menu navigation
-- Live config viewer
-- Real‑time logs
-- Status indicators
-- Progress bars
-- Styled components (Lipgloss)
-- Keyboard‑driven operation
-
----
-
-# 📦 Installation
-
-### Download from Releases
-
-```
-https://github.com/MohsenBg/bgscaner/releases
+**🪟 Windows**
+```powershell
+irm https://raw.githubusercontent.com/MohsenBg/bgscan/refs/heads/main/scripts/install.ps1 | iex
 ```
 
-Download the archive matching your platform.
+**🐧 Linux / 🍎 macOS**
+```bash
+curl -fsSL https://raw.githubusercontent.com/MohsenBg/bgscan/refs/heads/main/scripts/install.sh | sh
+```
+
+**🤖 Android (Termux)**
+```bash
+pkg update -y && pkg install bash curl unzip -y
+curl -fsSL https://raw.githubusercontent.com/MohsenBg/bgscan/refs/heads/main/scripts/install.sh | bash
+```
 
 ---
 
-## ▶️ Running bgscan
+### Manual Install
 
-### 1️⃣ Extract the archive
+Download the binary for your OS and architecture from the Releases page:
 
-Linux / macOS / Termux:
+👉 **[Download the latest release](https://github.com/MohsenBg/bgscan/releases/latest)**
 
+**Linux / macOS / Termux**
 ```bash
 unzip bgscan-*.zip
-```
-
-Windows:
-
-Right click → **Extract All**
-
----
-
-### 2️⃣ Enter the extracted directory
-
-```bash
-cd bgscan-*
-```
-
----
-
-### 3️⃣ Run the binary
-
-Linux / macOS / Termux:
-
-```bash
+chmod +x bgscan
 ./bgscan
 ```
 
-Windows (PowerShell):
+**Windows**
 
-```powershell
-.\bgscan.exe
-```
+Extract the ZIP and run `bgscan.exe`.
 
 ---
 
-# 📚 Documentation
+## 📚 Documentation
 
-Detailed documentation for **configuration files, scanning features, and integrations** is available in the `docs/` directory.
+### 👤 User Docs
+Usage guide, configuration, supported protocols, execution modes, and practical examples:
 
-Start here:
-
-
-[**Docs**](./docs/README.md)
-
-
-The documentation includes:
-
-- Configuration reference
-- Protocol settings
-- Writer system
-- Xray integration
-- Custom outbound configuration
+📖 **[→ User Documentation](docs/user/README.md)**
 
 ---
 
-# ⚙️ Settings
+### 🛠️ Developer Docs
+Project architecture, module structure, the Pipeline engine, the Asset system, coding standards, and contribution guidelines:
 
-All configuration files are located in the `settings/` directory:
-
-```text
-settings/
-├── dns_settings.toml
-├── general_settings.toml
-├── http_settings.toml
-├── icmp_settings.toml
-├── tcp_settings.toml
-├── writer_settings.toml
-└── xray_settings.toml
-```
-
-
-# 📂 Asset System
-
-`bgscan` uses external runtime assets stored under `assets/`:
-
-```text
-assets/
-  xray/
-    outbounds/
-      *.example
-  dnstt-client/
-  slipstream-client/
-```
-
-
-
-`bgscan` automatically loads `.json` outbound files at runtime.
+📖 **[→ Developer Documentation](docs/developer/README.md)**
 
 ---
 
-# 🧠 Engine Architecture
+## 💖 Support / Donate
 
-```
-CIDR Streamer
-      ↓
-   Stage Chain
-      ↓
-   Worker Pool
-      ↓
- Protocol Runner
-      ↓
-  Result Writer
-      ↓
-  Atomic Merge
-```
+If bgscan has been useful to you and you'd like to support its development:
+
+| Network | Currency | Address |
+|:-------:|:--------:|---------|
+| ₿ Bitcoin | `BTC` | `bc1qdwh57dm97nmx5jzdr7lrc9cxe5xh3zc59er7z9` |
+| 🟣 Ethereum | `ETH` | `0x40Fd22Fff4E059e906A10747Fd0a45A1DB39c985` |
+| 🟡 BNB Smart Chain | `BNB / BEP20` | `0x40Fd22Fff4E059e906A10747Fd0a45A1DB39c985` |
+| 🔷 TRON | `TRX / TRC20` | `TNW6pbfY8zZVZezZWyYXo7h12MycRsVJK7` |
 
 ---
 
-# 📊 Result System
+<div align="center">
 
-- Asynchronous writer
-- Buffered batching
-- Atomic file replace
-- `fsync`‑safe writes
-- Duplicate filtering
-- Structured output by protocol
+Built with ❤️ and Go &nbsp;|&nbsp; MIT License
 
-Supported result types:
-
-- ICMP
-- TCP
-- HTTP
-- DNS
-- DNSTT
-- Slipstream
-- Xray
-
----
-
-# 🛠 Build (For Developers)
-
-## Requirements
-
-- Go **1.25.4+**
-- Git
-- Bash (Linux / macOS / WSL)
-
----
-
-## Clone Repository
-
-```bash
-git clone https://github.com/MohsenBg/bgscaner.git
-cd bgscaner
-```
-
----
-
-## Build
-
-```bash
-./build.sh
-```
-
-Outputs will be generated in:
-
-```
-dist/<version>/
-```
-
----
-
-# ❤️ Support the Project
-
-If **bgscan** is useful for your work, consider supporting its development.
-
----
-
-### 🟡 Bitcoin (BTC)
-
-```
-bc1q3c7cu36faxddjwc3h99k0vt82nj2m9t6u7tdfj
-```
-
-### 🟢 USDT (BEP20)
-
-```
-0x2ea5A8558B4250cCBF147b2E2501B086700f184A
-```
-
-### 🟡 BNB (BEP20)
-
-```
-0x2ea5A8558B4250cCBF147b2E2501B086700f184A
-```
-
-### 🔵 Ethereum (ERC20)
-
-```
-0x2ea5A8558B4250cCBF147b2E2501B086700f184A
-```
-
-### 🔴 TRON (TRX)
-
-```
-TVxmGjLfyDL3ArbdWk9F8Za24EDm1CHMF4
-```
-
-### 🟣 TON
-
-```
-UQDpsu6VBCbl31-LLKcAX8CUCD6BHzzVoHoM2clFJBsct8rq
-```
-
----
-
-# 🤝 Contributing
-
-1. Fork the repository  
-2. Create a feature branch  
-3. Commit your changes  
-4. Open a pull request
-
-Guidelines:
-
-- Write idiomatic Go
-- Add GoDoc for exported types
-- Keep concurrency safe and documented
-
----
-
-# 📜 License
-
-Released under the **MIT License**.
-
----
-
-# 👨‍💻 Author
-
-Developed and maintained by **MohsenBg**
+</div>

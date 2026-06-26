@@ -1,4 +1,4 @@
-<div align="left">
+<div align="right">
 
 [**English**](./README.md)  |  [**فارسی**](./README.fa.md)
 

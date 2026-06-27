@@ -51,21 +51,24 @@ func (m *Model) Init() tea.Cmd {
 // newLogsMenu creates the menu with log category options.
 func newLogsMenu(l *layout.Layout) *menu.Model {
 	items := []menu.MenuItem{
-		menu.NewMenuItem("▶", "Core Logs", "c",
+		menu.NewMenuItem(
+			"▶", "Core Logs", "c",
 			func() tea.Msg {
 				return ui.OpenComponentMsg{
 					Component: logview.New(l, logger.Core(), "Core Logs"),
 				}
 			},
 		),
-		menu.NewMenuItem("⚙", "UI Logs", "u",
+		menu.NewMenuItem(
+			"⚙", "UI Logs", "u",
 			func() tea.Msg {
 				return ui.OpenComponentMsg{
 					Component: logview.New(l, logger.UI(), "UI Logs"),
 				}
 			},
 		),
-		menu.NewMenuItem("☰", "Debug Logs", "d",
+		menu.NewMenuItem(
+			"::", "Debug Logs", "d",
 			func() tea.Msg {
 				return ui.OpenComponentMsg{
 					Component: logview.New(l, logger.Debug(), "Debug Logs"),

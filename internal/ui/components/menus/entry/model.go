@@ -57,14 +57,15 @@ func (m *Model) Init() tea.Cmd {
 // helpers
 func newMainMenu(layout *layout.Layout) *menu.Model {
 	items := []menu.MenuItem{
-		menu.NewMenuItem("▶", "Run Scan", "s",
+		menu.NewMenuItem(
+			"▶", "Run Scan", "s",
 			func() tea.Msg {
 				return ui.OpenComponentMsg{
 					Component: targetsource.New(layout),
 				}
 			},
 		),
-		menu.NewMenuItem("☰", "IP Files", "i", func() tea.Msg {
+		menu.NewMenuItem("::", "IP Files", "i", func() tea.Msg {
 			return ui.OpenComponentMsg{
 				Component: iplist.New(layout, "IP Files", nil),
 			}
@@ -92,4 +93,3 @@ func newMainMenu(layout *layout.Layout) *menu.Model {
 	}
 	return menu.New(items, "Main Menu", layout)
 }
-

@@ -30,7 +30,7 @@ func New(layout *layout.Layout) *Model {
 		layout: layout,
 	}
 	items := []menu.MenuItem{
-		menu.NewMenuItem("☰", "IP List", "i", func() tea.Msg {
+		menu.NewMenuItem("::", "IP List", "i", func() tea.Msg {
 			return m.OpenIPList(func(i *iplist.IPFileInfo) tea.Cmd {
 				return ui.OpenComponentCmd(scantype.New(layout, i.Path))
 			})

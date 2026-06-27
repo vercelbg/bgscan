@@ -80,7 +80,7 @@ func newMenu(layout *layout.Layout) *menu.Model {
 			},
 		),
 		menu.NewMenuItem(
-			"☰",
+			"::",
 			"Select Json",
 			"j",
 			func() tea.Msg {
@@ -91,4 +91,3 @@ func newMenu(layout *layout.Layout) *menu.Model {
 
 	return menu.New(items, "Addition Method", layout)
 }
-

@@ -1,11 +1,13 @@
 package startup
 
 import (
-	"bgscan/internal/ui/theme"
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"time"
+
+	"bgscan/internal/ui/theme"
 
 	"github.com/charmbracelet/lipgloss"
 )
@@ -77,7 +79,9 @@ func RunHealthChecks() {
 	success("[SYSTEM] All startup checks completed ✅")
 	fmt.Println()
 
-	pressEnterToContinue()
+	if err := pressEnterToContinue(); err != nil {
+		log.Printf("failed to wait for Enter: %v", err)
+	}
 }
 
 // binaryMissing logs a warning sequence indicating that a required binary
@@ -129,9 +133,10 @@ func successf(format string, a ...any) {
 
 // pressEnterToContinue pauses execution until the user presses Enter.
 // Used for interactive CLI workflows.
-func pressEnterToContinue() {
+func pressEnterToContinue() error {
 	fmt.Print("Press Enter to continue...")
-	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	_, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
+	return err
 }
 
 // pause adds a delay unless fastboot mode is enabled.

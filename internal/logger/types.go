@@ -161,7 +161,11 @@ func tailFile(path string, n int) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			CoreError("error closing file: %v", err)
+		}
+	}()
 
 	stat, _ := file.Stat()
 	filesize := stat.Size()
@@ -171,10 +175,17 @@ func tailFile(path string, n int) ([]string, error) {
 
 	// 1. Move the cursor backward from the end, one byte at a time
 	for i := filesize - 1; i >= 0; i-- {
-		file.Seek(i, 0) // Jump to this specific byte
+		_, err := file.Seek(i, 0) // Jump to this specific byte
+		if err != nil {
+			return nil, err
+		}
 
 		char := make([]byte, 1)
-		file.Read(char)
+
+		_, err = file.Read(char)
+		if err != nil {
+			return nil, err
+		}
 
 		if char[0] == '\n' {
 			if len(currentLine) > 0 {

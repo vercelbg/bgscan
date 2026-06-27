@@ -1,8 +1,10 @@
 package startup
 
 import (
-	"bgscan/internal/logger"
+	"log"
 	"os"
+
+	"bgscan/internal/logger"
 )
 
 // checkLoggerHealth initializes all logging subsystems required by the
@@ -17,24 +19,32 @@ import (
 // logging is considered a critical dependency for the application.
 func checkLoggerHealth() {
 	info("[INFO] Initializing loggers...")
-
 	if err := logger.InitCore(); err != nil {
 		errMsg("Core logger initialization failed", err)
-		pressEnterToContinue()
+
+		if err := pressEnterToContinue(); err != nil {
+			log.Printf("failed to wait for Enter: %v", err)
+		}
 		os.Exit(1)
 	}
 	success("[SUCCESS] Core logger initialized")
 
 	if err := logger.InitUI(); err != nil {
 		errMsg("UI logger initialization failed", err)
-		pressEnterToContinue()
+
+		if err := pressEnterToContinue(); err != nil {
+			log.Printf("failed to wait for Enter: %v", err)
+		}
 		os.Exit(1)
 	}
 	success("[SUCCESS] UI logger initialized")
 
 	if err := logger.InitDebug(); err != nil {
 		errMsg("Debug logger initialization failed", err)
-		pressEnterToContinue()
+
+		if err := pressEnterToContinue(); err != nil {
+			log.Printf("failed to wait for Enter: %v", err)
+		}
 		os.Exit(1)
 	}
 	success("[SUCCESS] Debug logger initialized")

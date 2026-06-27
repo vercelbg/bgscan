@@ -1,4 +1,4 @@
-<div align="rgiht">
+<div align="right">
 
 [**English**](./contributing.md)  |  [**فارسی**](./contributing.fa.md)
 

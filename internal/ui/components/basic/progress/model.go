@@ -4,9 +4,10 @@ import (
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
+	"bgscan/internal/ui/theme"
 
-	"github.com/charmbracelet/bubbles/progress"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/progress"
+	tea "charm.land/bubbletea/v2"
 )
 
 const (
@@ -18,7 +19,6 @@ const (
 	maxWidth = 90
 )
 
-
 // Model represents a reusable progress bar UI component.
 //
 // It wraps the BubbleTea progress model and integrates it with the
@@ -28,21 +28,25 @@ type Model struct {
 	id   ui.ComponentID
 	name string
 
-	layout *layout.Layout
+	layout   *layout.Layout
 	progress progress.Model
 
 	// percent represents the current progress value (0.0 → 1.0).
 	percent float64
 }
 
-
 // New creates a new progress bar component.
 //
 // The progress bar uses the default BubbleTea gradient style and
 // automatically adapts its width based on the available layout body width.
 func New(layout *layout.Layout) *Model {
-
-	p := progress.New(progress.WithDefaultGradient())
+	p := progress.New(
+		progress.WithScaled(true),
+		progress.WithColors(
+			theme.Current().ProgressStart,
+			theme.Current().ProgressEnd,
+		),
+	)
 
 	m := &Model{
 		id:       ui.NewComponentID(),
@@ -52,12 +56,11 @@ func New(layout *layout.Layout) *Model {
 		percent:  0,
 	}
 
-	m.progress.Width = m.Width()
+	m.progress.SetWidth(m.Width())
 	m.progress.PercentFormat = " %0.2f%%"
 
 	return m
 }
-
 
 // Init initializes the component.
 //
@@ -65,7 +68,6 @@ func New(layout *layout.Layout) *Model {
 func (m *Model) Init() tea.Cmd {
 	return nil
 }
-
 
 // Width calculates the progress bar width based on the layout body.
 //
@@ -78,24 +80,20 @@ func (m *Model) Width() int {
 	return width - padding*2
 }
 
-
 // ID returns the unique component identifier.
 func (m *Model) ID() ui.ComponentID {
 	return m.id
 }
-
 
 // Name returns the human‑readable component name.
 func (m *Model) Name() string {
 	return m.name
 }
 
-
 // OnClose is called when the component is removed from the UI stack.
 func (m *Model) OnClose() tea.Cmd {
 	return nil
 }
-
 
 // Mode returns the interaction mode of the component.
 //
@@ -104,4 +102,3 @@ func (m *Model) OnClose() tea.Cmd {
 func (m *Model) Mode() env.Mode {
 	return env.NormalMode
 }
-

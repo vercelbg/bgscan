@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Model represents the footer component responsible for

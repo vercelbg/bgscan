@@ -2,7 +2,7 @@ package crud
 
 import (
 	"bgscan/internal/ui/components/basic/table"
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Provider defines the hook system for the generic CRUD controller.

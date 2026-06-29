@@ -3,7 +3,7 @@ package tabs
 import (
 	"bgscan/internal/ui/theme"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 func (m *Model) View() string {

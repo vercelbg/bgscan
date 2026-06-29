@@ -3,7 +3,7 @@ package progress
 import (
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // UpdateProgressMsg is sent to update the progress bar state.

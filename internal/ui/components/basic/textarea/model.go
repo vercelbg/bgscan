@@ -5,8 +5,8 @@ import (
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
 
-	"github.com/charmbracelet/bubbles/textarea"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/textarea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Model represents an input dialog component that collects
@@ -57,7 +57,6 @@ func New(
 	cancel func(input string) tea.Cmd,
 	confirm func(input string) tea.Cmd,
 ) *Model {
-
 	ta := textarea.New()
 	ta.Placeholder = placeholder
 	ta.CharLimit = 0
@@ -77,6 +76,9 @@ func New(
 	}
 
 	m.textarea.SetWidth(m.Width())
+	m.textarea.DynamicHeight = true
+	ta.MinHeight = 3
+	ta.MaxHeight = height
 	m.textarea.SetHeight(height)
 	return m
 }

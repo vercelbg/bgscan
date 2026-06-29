@@ -7,15 +7,16 @@ import (
 	"sync"
 	"time"
 
+	"bgscan/internal/logger"
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/table"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/table"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // Aliases for upstream table types
@@ -23,6 +24,10 @@ type (
 	Column = table.Column
 	Row    = table.Row
 )
+
+// gutterWidth is the horizontal space reserved for borders/padding when
+// computing the table's available width.
+const gutterWidth = 10
 
 // Model wraps a Bubble Tea table with responsive layout, key bindings, and concurrency safety.
 type Model struct {
@@ -39,7 +44,7 @@ type Model struct {
 	BubbleTable table.Model
 	Keys        KeyMap
 
-	colsWidth []int
+	colsWidth []int // original (unscaled) column widths, used as scaling reference
 	paddingY  int
 }
 
@@ -63,22 +68,35 @@ func (m *Model) OnClose() tea.Cmd {
 	return nil
 }
 
+// Mode implements ui.Component.
+func (m *Model) Mode() env.Mode {
+	return env.NormalMode
+}
+
 // New creates a new table model.
 func New(title string, cols []table.Column, rows []table.Row, lay *layout.Layout) *Model {
 	m := &Model{
-		id:       ui.NewComponentID(),
-		name:     "table",
-		Title:    title,
-		Layout:   lay,
-		Help:     help.New(),
-		Keys:     defaultKeys(),
-		paddingY: 0,
+		id:     ui.NewComponentID(),
+		name:   "table",
+		Title:  title,
+		Layout: lay,
+		Help:   help.New(),
+		Keys:   defaultKeys(),
 	}
-	m.BubbleTable = m.createTable(rows, cols)
 
 	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.colsWidth = columnWidths(cols)
+	m.BubbleTable = table.New(
+		table.WithColumns(m.scaledColumns(cols)),
+		table.WithRows(rows),
+		table.WithFocused(true),
+		table.WithHeight(max(1, len(rows))),
+		table.WithWidth(m.tableWidthLocked()),
+	)
+	m.BubbleTable.SetStyles(tableStyles())
 	m.updateTableSizeLocked()
-	m.mu.Unlock()
 
 	return m
 }
@@ -91,6 +109,156 @@ func (m *Model) SetPaddingY(padding int) {
 	m.updateTableSizeLocked()
 }
 
+// SetKeys replaces the current key bindings.
+func (m *Model) SetKeys(keys ...ActionKey) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.Keys = defaultKeys(keys...)
+}
+
+// AppendRow adds a new row to the table safely.
+func (m *Model) AppendRow(row table.Row) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	rows := append(slices.Clone(m.BubbleTable.Rows()), slices.Clone(row))
+	m.BubbleTable.SetRows(rows)
+	m.updateTableSizeLocked()
+}
+
+// SetRow replaces a row at the given index. No-op if index is out of range.
+func (m *Model) SetRow(index int, row table.Row) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	rows := slices.Clone(m.BubbleTable.Rows())
+	if index < 0 || index >= len(rows) {
+		return
+	}
+
+	rows[index] = slices.Clone(row)
+	m.BubbleTable.SetRows(rows)
+	m.updateTableSizeLocked()
+}
+
+// SetRows replaces all rows in the table.
+func (m *Model) SetRows(rows []table.Row) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.BubbleTable.SetRows(cloneRows(rows))
+	m.updateTableSizeLocked()
+}
+
+// NewRowTime formats a timestamp for display.
+func NewRowTime(t time.Time) string {
+	if t.IsZero() {
+		return "-"
+	}
+	return t.Format("2006-01-02 15:04:05")
+}
+
+// NewRowBool returns "yes" or "no" for a boolean value.
+func NewRowBool(v bool) string {
+	if v {
+		return "yes"
+	}
+	return "no"
+}
+
+// NewTimeDurationRow returns a human-readable duration from a past time.
+func NewTimeDurationRow(from time.Time) string {
+	if from.IsZero() {
+		return "-"
+	}
+	d := time.Since(from)
+	switch {
+	case d < time.Second:
+		return "just now"
+	case d < time.Minute:
+		return d.Truncate(time.Second).String()
+	case d < time.Hour:
+		return d.Truncate(time.Minute).String()
+	default:
+		return d.Truncate(time.Hour).String()
+	}
+}
+
+// cloneRows returns a deep copy of rows, safe to store independently of the caller's slice.
+func cloneRows(rows []table.Row) []table.Row {
+	out := make([]table.Row, len(rows))
+	for i, row := range rows {
+		out[i] = slices.Clone(row)
+	}
+	return out
+}
+
+// columnWidths extracts the width of each column, in order.
+func columnWidths(cols []table.Column) []int {
+	widths := make([]int, len(cols))
+	for i, c := range cols {
+		widths[i] = c.Width
+	}
+	return widths
+}
+
+// scaledColumns returns a copy of cols with widths scaled to fit the
+// available table width, proportional to m.colsWidth. Caller must hold m.mu.
+func (m *Model) scaledColumns(cols []table.Column) []table.Column {
+	out := slices.Clone(cols)
+
+	total := 0
+	for _, w := range m.colsWidth {
+		total += w
+	}
+	if total <= 0 {
+		return out
+	}
+
+	ratio := float64(m.tableWidthLocked()) / float64(total)
+	for i := range out {
+		out[i].Width = int(ratio * float64(m.colsWidth[i]))
+	}
+	return out
+}
+
+// updateTableSizeLocked recalculates column widths and table height to fit
+// the current layout. Caller must hold m.mu.
+func (m *Model) updateTableSizeLocked() {
+	if m.Layout == nil || m.Layout.Body.Height == 0 || m.Layout.Body.Width == 0 {
+		return
+	}
+	if len(m.colsWidth) == 0 {
+		return
+	}
+
+	cols := m.scaledColumns(m.BubbleTable.Columns())
+	m.BubbleTable.SetColumns(cols)
+
+	helpHeight := lipgloss.Height(m.renderHelpView())
+	titleHeight := lipgloss.Height(m.renderTitle())
+	height := max(1, m.Layout.Body.Height-helpHeight-titleHeight-m.paddingY)
+	m.BubbleTable.SetHeight(height)
+	m.BubbleTable.SetWidth(m.tableWidthLocked())
+
+	logger.DebugInfo("Updated table size: %dx%d", m.tableWidthLocked(), height)
+}
+
+// tableWidthLocked returns the available table width given the current
+// layout. Caller must hold m.mu (read or write).
+func (m *Model) tableWidthLocked() int {
+	if m.Layout == nil || m.Layout.Body.Width == 0 {
+		return 80
+	}
+	return min(80, m.Layout.Body.Width-gutterWidth)
+}
+
+//
+// ──────────────────────────────────────────────────────────────
+//  Key bindings
+// ──────────────────────────────────────────────────────────────
+//
+
 // ActionKey defines a key binding and its action.
 type ActionKey struct {
 	Keys      []string
@@ -99,20 +267,21 @@ type ActionKey struct {
 	Cmd       tea.Cmd
 }
 
+// arrowSymbols maps key names to their display glyphs.
+var arrowSymbols = map[string]string{
+	"up":    "↑",
+	"down":  "↓",
+	"left":  "←",
+	"right": "→",
+}
+
 // NewKey creates a new action key definition.
 func NewKey(keys []string, shortHelp, fullHelp string, cmd tea.Cmd) ActionKey {
 	ks := make([]string, len(keys))
 	for i, k := range keys {
-		switch k {
-		case "up", "↑":
-			ks[i] = "↑"
-		case "down", "↓":
-			ks[i] = "↓"
-		case "left", "←":
-			ks[i] = "←"
-		case "right", "→":
-			ks[i] = "→"
-		default:
+		if symbol, ok := arrowSymbols[k]; ok {
+			ks[i] = symbol
+		} else {
 			ks[i] = k
 		}
 	}
@@ -134,13 +303,6 @@ func NewKey(keys []string, shortHelp, fullHelp string, cmd tea.Cmd) ActionKey {
 		FullHelp:  fullHelp,
 		Cmd:       cmd,
 	}
-}
-
-// SetKeys replaces the current key bindings.
-func (m *Model) SetKeys(keys ...ActionKey) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.Keys = defaultKeys(keys...)
 }
 
 // KeyMap stores registered key bindings.
@@ -189,7 +351,7 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 	if len(k.Actions) == 0 {
 		return nil
 	}
-	colCount := 4
+	const colCount = 4
 	cols := make([][]key.Binding, colCount)
 	for i, a := range k.Actions {
 		if a.FullHelp == "" {
@@ -199,13 +361,12 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 			key.WithKeys(a.Keys...),
 			key.WithHelp("", a.FullHelp),
 		)
-		col := i % colCount
-		cols[col] = append(cols[col], binding)
+		cols[i%colCount] = append(cols[i%colCount], binding)
 	}
 	return cols
 }
 
-func defaultKeys(keys ...ActionKey) KeyMap {
+func defaultKeys(extra ...ActionKey) KeyMap {
 	const spacebar = " "
 	km := KeyMap{}
 	km.Add(NewKey([]string{"up", "k"}, "up", "Move up", nil))
@@ -216,140 +377,10 @@ func defaultKeys(keys ...ActionKey) KeyMap {
 	km.Add(NewKey([]string{"d", "ctrl+d"}, "", "½ page down", nil))
 	km.Add(NewKey([]string{"home", "g"}, "", "Go to start", nil))
 	km.Add(NewKey([]string{"end", "G"}, "", "Go to end", nil))
-	for _, keyConfig := range keys {
-		km.Add(keyConfig)
+	for _, k := range extra {
+		km.Add(k)
 	}
 	km.Add(NewKey([]string{"?"}, "help", "Toggle help", nil))
 	km.Add(NewKey([]string{"q", "esc"}, "quit", "Quit", nil))
 	return km
 }
-
-// NewRowTime formats a timestamp for display.
-func NewRowTime(t time.Time) string {
-	if t.IsZero() {
-		return "-"
-	}
-	return t.Format("2006-01-02 15:04:05")
-}
-
-// NewRowBool returns "yes" or "no" for a boolean value.
-func NewRowBool(v bool) string {
-	if v {
-		return "yes"
-	}
-	return "no"
-}
-
-// NewTimeDurationRow returns a human-readable duration from a past time.
-func NewTimeDurationRow(from time.Time) string {
-	if from.IsZero() {
-		return "-"
-	}
-	d := time.Since(from)
-	switch {
-	case d < time.Second:
-		return "just now"
-	case d < time.Minute:
-		return d.Truncate(time.Second).String()
-	case d < time.Hour:
-		return d.Truncate(time.Minute).String()
-	default:
-		return d.Truncate(time.Hour).String()
-	}
-}
-
-// AppendRow adds a new row to the table safely.
-func (m *Model) AppendRow(row table.Row) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	newRow := make(table.Row, len(row))
-	copy(newRow, row)
-
-	rows := append([]table.Row(nil), m.BubbleTable.Rows()...)
-	rows = append(rows, newRow)
-	m.BubbleTable.SetRows(rows)
-}
-
-// Mode implements ui.Component.
-func (m *Model) Mode() env.Mode {
-	return env.NormalMode
-}
-
-// Private helpers
-
-func (m *Model) createTable(rows []table.Row, cols []table.Column) table.Model {
-	m.mu.Lock()
-	width := m.tableWidthLocked()
-	m.mu.Unlock()
-
-	total := 0
-	for _, col := range cols {
-		total += col.Width
-	}
-	if total > 0 {
-		ratio := float64(width) / float64(total)
-		m.mu.Lock()
-		m.colsWidth = make([]int, len(cols))
-		for i := range cols {
-			m.colsWidth[i] = cols[i].Width
-			cols[i].Width = int(float64(cols[i].Width) * ratio)
-		}
-		m.mu.Unlock()
-	}
-
-	t := table.New(
-		table.WithColumns(cols),
-		table.WithRows(rows),
-		table.WithFocused(true),
-		table.WithHeight(max(1, len(rows))),
-	)
-	t.SetStyles(tableStyles())
-	return t
-}
-
-func (m *Model) updateTableSizeLocked() {
-	if m.Layout == nil || m.Layout.Body.Height == 0 || m.Layout.Body.Width == 0 {
-		return
-	}
-
-	width := m.tableWidthLocked()
-	helpHeight := lipgloss.Height(m.renderHelpView())
-	titleHeight := lipgloss.Height(m.renderTitle())
-
-	height := max(1, m.Layout.Body.Height-helpHeight-titleHeight-m.paddingY)
-	cols := m.BubbleTable.Columns()
-	if len(cols) == 0 {
-		return
-	}
-
-	total := 0
-	for _, w := range m.colsWidth {
-		total += w
-	}
-	if total <= 0 {
-		return
-	}
-
-	ratio := float64(width) / float64(total)
-	for i := range cols {
-		cols[i].Width = int(ratio * float64(m.colsWidth[i]))
-	}
-
-	m.BubbleTable.SetColumns(cols)
-	m.BubbleTable.SetHeight(height)
-}
-
-func (m *Model) updateTableSize() {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.updateTableSizeLocked()
-}
-
-func (m *Model) tableWidthLocked() int {
-	if m.Layout == nil || m.Layout.Body.Width == 0 {
-		return 80
-	}
-	return min(80, m.Layout.Body.Width-10)
-}
-

@@ -10,7 +10,7 @@ import (
 	"bgscan/internal/ui/components/basic/progress"
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {

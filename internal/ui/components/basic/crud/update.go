@@ -1,6 +1,9 @@
 package crud
 
 import (
+	"errors"
+	"fmt"
+
 	"bgscan/internal/logger"
 	"bgscan/internal/ui/components/basic/confirm"
 	"bgscan/internal/ui/components/basic/input"
@@ -8,14 +11,14 @@ import (
 	"bgscan/internal/ui/components/basic/table"
 	"bgscan/internal/ui/shared/ui"
 	"bgscan/internal/ui/shared/validation"
-	"errors"
-	"fmt"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
-type msgLoaded[T any] struct{ items []T }
-type msgError struct{ err error }
+type (
+	msgLoaded[T any] struct{ items []T }
+	msgError         struct{ err error }
+)
 
 func (m *Model[T]) RefreshCmd() tea.Msg {
 	items, err := m.provider.Load()
@@ -70,7 +73,7 @@ func (m *Model[T]) syncRows() {
 	for _, item := range m.items {
 		rows = append(rows, m.provider.RenderRow(item))
 	}
-	m.table.BubbleTable.SetRows(rows)
+	m.table.SetRows(rows)
 }
 
 func (m *Model[T]) handleSelect() tea.Cmd {

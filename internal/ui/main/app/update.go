@@ -10,7 +10,7 @@ import (
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Update is the central message router for the application.
@@ -26,7 +26,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.layout.Update(msg.Width, msg.Height)
 
 	// Handle keyboard input
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 
 		// Immediate application quit
 		if msg.String() == "ctrl+c" {
@@ -34,7 +34,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// dump Goroutine for DebugInfo
-		if msg.String() == tea.KeyCtrlT.String() {
+		if msg.String() == env.KeyCtrlT {
 			dumpGoroutines()
 		}
 

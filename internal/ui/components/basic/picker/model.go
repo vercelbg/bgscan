@@ -7,8 +7,8 @@ import (
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
 
-	"github.com/charmbracelet/bubbles/filepicker"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/filepicker"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Model implements a file picker overlay component.

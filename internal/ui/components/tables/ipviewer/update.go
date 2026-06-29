@@ -1,19 +1,21 @@
 package ipviewer
 
 import (
-	"bgscan/internal/core/result"
-	"bgscan/internal/ui/components/basic/notice"
-	"bgscan/internal/ui/components/basic/table"
-	"bgscan/internal/ui/shared/ui"
 	"fmt"
 	"time"
 
+	"bgscan/internal/core/result"
+	"bgscan/internal/ui/components/basic/notice"
+	"bgscan/internal/ui/components/basic/table"
+	"bgscan/internal/ui/shared/env"
+	"bgscan/internal/ui/shared/ui"
+
+	tea "charm.land/bubbletea/v2"
 	"github.com/atotto/clipboard"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
-	if key, ok := msg.(tea.KeyMsg); ok && key.String() == tea.KeyEnter.String() {
+	if key, ok := msg.(tea.KeyMsg); ok && key.String() == env.KeyEnter {
 		if cmd := m.copySelectedIP(); cmd != nil {
 			return m, cmd
 		}
@@ -63,7 +65,7 @@ func (m *Model) updateRows(rows []result.IPScanResult) {
 
 	m.rows = list
 	if t, ok := m.table.(*table.Model); ok && t != nil {
-		t.BubbleTable.SetRows(m.rows)
+		t.SetRows(list)
 	}
 }
 

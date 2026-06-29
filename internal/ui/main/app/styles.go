@@ -3,7 +3,7 @@ package app
 import (
 	"bgscan/internal/ui/theme"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 func containerStyle(termWidth, termHeight int) lipgloss.Style {
@@ -14,7 +14,7 @@ func containerStyle(termWidth, termHeight int) lipgloss.Style {
 }
 
 func mainStyle(contentWidth, contentHeight int) lipgloss.Style {
-	return lipgloss.NewStyle().Align(lipgloss.Center, lipgloss.Center).
+	return lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(theme.Current().BorderActive).
 		Width(contentWidth).

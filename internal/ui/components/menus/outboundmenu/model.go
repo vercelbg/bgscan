@@ -6,7 +6,7 @@ import (
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // ImportMethod defines how the user wants to add the outbound configurations.

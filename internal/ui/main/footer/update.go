@@ -3,7 +3,7 @@ package footer
 import (
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Update handles incoming Bubble Tea messages and updates

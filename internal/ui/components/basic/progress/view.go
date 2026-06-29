@@ -9,4 +9,3 @@ package progress
 func (m *Model) View() string {
 	return m.progress.View()
 }
-

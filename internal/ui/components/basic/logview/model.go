@@ -1,18 +1,19 @@
 package logview
 
 import (
+	"context"
+	"sync"
+	"time"
+
 	"bgscan/internal/core/config"
 	"bgscan/internal/logger"
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
-	"context"
-	"sync"
-	"time"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // Model implements a scrollable log viewer component.
@@ -65,7 +66,7 @@ func New(l *layout.Layout, log *logger.Logger, title string) *Model {
 		logger:     log,
 		maxMessage: 200,
 
-		viewport: viewport.New(0, 0),
+		viewport: viewport.New(),
 
 		padding:           5,
 		containerMaxWidth: l.Body.Width - 10,
@@ -147,17 +148,18 @@ func (m *Model) setSize() {
 		m.layout.Body.Width-10,
 	)
 
-	m.viewport.Width = min(maxViewportWidth, m.containerWidth-2)
+	width := min(maxViewportWidth, m.containerWidth-2)
 
+	m.viewport.SetWidth(width)
 	helpHeight := lipgloss.Height(
-		helpStyle(m.viewport.Width).Render(helpView()),
+		helpStyle(m.viewport.Width()).Render(helpView()),
 	)
 
-	m.viewport.Height =
-		m.layout.Body.Height -
-			m.padding -
-			lipgloss.Height(m.title) -
-			helpHeight
+	height := m.layout.Body.Height -
+		m.padding -
+		lipgloss.Height(m.title) -
+		helpHeight
+	m.viewport.SetHeight(height)
 }
 
 // ID returns the component identifier.

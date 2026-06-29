@@ -3,7 +3,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	overlay "github.com/rmhubbert/bubbletea-overlay"
 )
 
@@ -14,13 +15,13 @@ const (
 
 // View renders the entire application UI including
 // base components and overlay layers.
-func (m model) View() string {
+func (m model) View() tea.View {
 	termWidth := m.layout.Terminal.Width
 	termHeight := m.layout.Terminal.Height
 
 	// Prevent rendering when terminal is too small
 	if termWidth < minWidth || termHeight < minHeight {
-		return m.renderLimitSize(termWidth, termHeight)
+		return tea.NewView(m.renderLimitSize(termWidth, termHeight))
 	}
 
 	// Render main layout (header, body, footer)
@@ -33,11 +34,12 @@ func (m model) View() string {
 
 	// Render overlays on top of the base content
 	content = m.renderOverlays(content)
-
-	return containerStyle(termWidth, termHeight).Render(
+	view := containerStyle(termWidth, termHeight).Render(
 		mainStyle(m.layout.Content.Width, m.layout.Content.Height).
 			Render(content),
 	)
+
+	return tea.NewView(view)
 }
 
 // renderLimitSize displays a warning when the terminal

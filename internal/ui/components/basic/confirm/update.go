@@ -3,7 +3,7 @@ package confirm
 import (
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Update handles incoming BubbleTea messages and updates the confirmation dialog state.
@@ -20,20 +20,19 @@ import (
 //     command is executed.
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 	switch msg := msg.(type) {
-
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch {
 
 		// Select "No"
-		case msg.Type == tea.KeyLeft || msg.String() == "l":
+		case msg.Code == tea.KeyLeft || msg.String() == "l":
 			m.confirm = false
 
 		// Select "Yes"
-		case msg.Type == tea.KeyRight || msg.String() == "j":
+		case msg.Code == tea.KeyRight || msg.String() == "j":
 			m.confirm = true
 
 		// Confirm selection
-		case msg.Type == tea.KeyEnter:
+		case msg.Code == tea.KeyEnter:
 			cmds := []tea.Cmd{m.CloseCmd()}
 
 			if m.confirm && m.confirmFunc != nil {

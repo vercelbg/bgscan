@@ -3,8 +3,8 @@ package table
 import (
 	"bgscan/internal/ui/theme"
 
-	"github.com/charmbracelet/bubbles/table"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/table"
+	"charm.land/lipgloss/v2"
 )
 
 //
@@ -31,8 +31,9 @@ func tableStyles() table.Styles {
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
 		BorderForeground(theme.Current().Info).
-		BorderBottom(true).
-		Padding(0, 1)
+		BorderBottom(true).Padding(0, 0)
+
+	s.Cell = s.Cell.Padding(0, 0)
 
 	// Selected row styling
 	s.Selected = s.Selected.
@@ -75,10 +76,9 @@ func titleStyles(width int) lipgloss.Style {
 //   - Centers the table horizontally
 //   - Applies the secondary theme color
 //   - Maintains consistent width alignment with surrounding components
-func tableViewStyle(width int) lipgloss.Style {
+func tableViewStyle(_ int) lipgloss.Style {
 	return lipgloss.NewStyle().
-		Width(width).
-		Align(lipgloss.Center).
+		Align(lipgloss.Left).
 		Foreground(theme.Current().Secondary).
 		Padding(0, 0)
 }

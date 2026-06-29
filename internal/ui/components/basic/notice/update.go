@@ -3,7 +3,7 @@ package notice
 import (
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Update handles incoming BubbleTea messages and updates the notice state.
@@ -14,9 +14,8 @@ import (
 //     scrolling for long messages.
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 	switch msg := msg.(type) {
-
-	case tea.KeyMsg:
-		if msg.Type == tea.KeyEnter {
+	case tea.KeyPressMsg:
+		if msg.Code == tea.KeyEnter {
 			return m, m.CloseCmd()
 		}
 	}

@@ -6,7 +6,7 @@ import (
 	"bgscan/internal/ui/components/basic/picker"
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Update intercepts framework runtime messages and forwards state signals down to active widgets.

@@ -1,10 +1,19 @@
 package table
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"bgscan/internal/logger"
+
+	"charm.land/lipgloss/v2"
+)
 
 func (m *Model) View() string {
 	width := m.Layout.Body.Width
+	logger.DebugInfo("View: rows=%d cols=%v", len(m.BubbleTable.Rows()), m.BubbleTable.Columns())
 	tableView := tableViewStyle(width).Render(m.BubbleTable.View())
+
+	raw := m.BubbleTable.View()
+	logger.DebugInfo("View raw (%d bytes): %q", len(raw), raw)
+
 	return lipgloss.NewStyle().
 		Width(width).
 		Render(lipgloss.JoinVertical(

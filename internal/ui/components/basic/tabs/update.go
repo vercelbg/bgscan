@@ -1,20 +1,21 @@
 package tabs
 
 import (
+	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == tea.KeyTab.String() {
+		if msg.String() == env.KeyTab {
 			m.NextTab()
 			cmd = m.selectTabCmd()
 		}
-		if msg.String() == tea.KeyShiftTab.String() {
+		if msg.String() == env.KeyShiftTab {
 			m.BackTab()
 			cmd = m.selectTabCmd()
 		}

@@ -11,7 +11,7 @@ import (
 	"bgscan/internal/ui/components/basic/table"
 	"bgscan/internal/ui/shared/layout"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	"github.com/dustin/go-humanize"
 )
 

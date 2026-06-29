@@ -1,6 +1,10 @@
 package scanner
 
 import (
+	"sort"
+	"sync"
+	"time"
+
 	"bgscan/internal/core/config"
 	"bgscan/internal/core/result"
 	"bgscan/internal/core/scanner"
@@ -12,12 +16,9 @@ import (
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
-	"sort"
-	"sync"
-	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type StageStatus int
@@ -87,7 +88,7 @@ func New(layout *layout.Layout, maxIPs int, scn *scanner.Scanner) *Model {
 			viewMode = ipviewer.FullView
 		}
 
-		m.ipViewers[i] = createIpViewer(layout, viewMode)
+		m.ipViewers[i] = createIPViewer(layout, viewMode)
 		m.progress[i] = progress.New(layout)
 		m.results[i] = make([]result.IPScanResult, 0, maxIPs)
 		m.batch[i] = make([]result.IPScanResult, 0, 128)
@@ -224,11 +225,11 @@ func (m *Model) currentError() error {
 	return m.scanError
 }
 
-func createIpViewer(layout *layout.Layout, mode ipviewer.ViewMode) ui.Component {
+func createIPViewer(layout *layout.Layout, mode ipviewer.ViewMode) ui.Component {
 	viewer := ipviewer.New(layout, "", nil, mode)
 
 	viewer.Table().SetKeys(
-		table.NewKey([]string{tea.KeyTab.String()}, "tab", "next tab", nil),
+		table.NewKey([]string{env.KeyTab}, "tab", "next tab", nil),
 		table.NewKey([]string{"p"}, "pause", "pause/resume scan", nil),
 		table.NewKey([]string{"l"}, "log", "view logs", nil),
 	)

@@ -1,7 +1,7 @@
 package picker
 
 import (
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 // View renders the file picker overlay.
@@ -16,7 +16,6 @@ import (
 // The entire block is wrapped in a styled container sized
 // according to the current layout constraints.
 func (m *Model) View() string {
-
 	// Limit picker width so it doesn't become too wide
 	width := min(70, m.Layout.Content.Width-10)
 	height := pickerHeight(m.Layout)

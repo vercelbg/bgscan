@@ -1,6 +1,8 @@
 package input
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"charm.land/lipgloss/v2"
+)
 
 // View renders the input dialog UI.
 //

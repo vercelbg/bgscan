@@ -5,8 +5,8 @@ import (
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Model represents an input dialog component that collects
@@ -56,7 +56,6 @@ func New(
 	cancel func(input string) tea.Cmd,
 	confirm func(input string) tea.Cmd,
 ) *Model {
-
 	ti := textinput.New()
 	ti.Placeholder = placeholder
 	ti.CharLimit = 256
@@ -75,8 +74,7 @@ func New(
 		dynamicValidation: false,
 	}
 
-	m.textinput.Width = m.Width()
-
+	m.textinput.SetWidth(m.Width())
 	return m
 }
 

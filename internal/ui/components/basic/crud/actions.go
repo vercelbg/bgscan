@@ -1,10 +1,12 @@
 package crud
 
 import (
-	"bgscan/internal/ui/components/basic/table"
 	"fmt"
 
-	tea "github.com/charmbracelet/bubbletea"
+	"bgscan/internal/ui/components/basic/table"
+	"bgscan/internal/ui/shared/env"
+
+	tea "charm.land/bubbletea/v2"
 )
 
 type MsgActionTrigger struct{ ActionType string }
@@ -15,7 +17,7 @@ func (m *Model[T]) configureKeymaps() {
 	// Select (Enter)
 	if _, ok := m.provider.OnSelect(m.zeroValue()); ok {
 		keys = append(keys, table.NewKey(
-			[]string{tea.KeyEnter.String()},
+			[]string{env.KeyEnter},
 			"select",
 			fmt.Sprintf("Select %s", m.name),
 			func() tea.Msg { return MsgActionTrigger{ActionType: "select"} },

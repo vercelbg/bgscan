@@ -3,7 +3,7 @@ package ui
 import (
 	"bgscan/internal/ui/shared/env"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	"github.com/google/uuid"
 )
 
@@ -21,7 +21,6 @@ func NewComponentID() ComponentID {
 // Components encapsulate their own state, update logic,
 // and rendering behavior.
 type Component interface {
-
 	// ID returns the unique identifier of the component instance.
 	ID() ComponentID
 

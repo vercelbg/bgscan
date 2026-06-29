@@ -1,17 +1,17 @@
 package main
 
 import (
-	"bgscan/internal/logger"
-	"bgscan/internal/startup"
-	"bgscan/internal/ui/main/app"
 	"fmt"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
+	"bgscan/internal/logger"
+	"bgscan/internal/startup"
+	"bgscan/internal/ui/main/app"
+
+	tea "charm.land/bubbletea/v2"
 )
 
 func main() {
-
 	startup.RunHealthChecks()
 
 	defer logger.CloseAll()

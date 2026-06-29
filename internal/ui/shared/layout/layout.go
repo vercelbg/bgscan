@@ -61,9 +61,8 @@ func (l *Layout) Update(termWidth, termHeight int) {
 	l.Terminal.Width = termWidth
 	l.Terminal.Height = termHeight
 
-	// Content area inside terminal borders
 	l.Content = ContentSize{
-		Width:   termWidth - 4,
+		Width:   termWidth - 2,
 		Height:  termHeight - 2,
 		Padding: 1,
 	}

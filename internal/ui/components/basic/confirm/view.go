@@ -1,10 +1,11 @@
 package confirm
 
 import (
-	"bgscan/internal/ui/shared/env"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	"bgscan/internal/ui/shared/env"
+
+	"charm.land/lipgloss/v2"
 )
 
 const maxButtonGap = 20

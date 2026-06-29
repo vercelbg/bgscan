@@ -1,7 +1,7 @@
 package iplist
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"bgscan/internal/core/iplist"
 	"bgscan/internal/logger"

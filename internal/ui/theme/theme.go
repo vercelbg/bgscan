@@ -1,9 +1,10 @@
 package theme
 
 import (
+	"image/color"
 	"os"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 // Package theme provides a centralized color palette and theme management
@@ -47,54 +48,59 @@ const (
 // of defining colors directly. This keeps the UI visually consistent
 // and allows the palette to be swapped dynamically.
 type Theme struct {
-	Primary   lipgloss.TerminalColor
-	Secondary lipgloss.TerminalColor
+	Primary   color.Color
+	Secondary color.Color
 
-	Border       lipgloss.TerminalColor
-	BorderActive lipgloss.TerminalColor
+	Border       color.Color
+	BorderActive color.Color
 
-	Text  lipgloss.TerminalColor
-	Muted lipgloss.TerminalColor
+	Text  color.Color
+	Muted color.Color
 
-	Info    lipgloss.TerminalColor
-	Error   lipgloss.TerminalColor
-	Success lipgloss.TerminalColor
+	Info    color.Color
+	Error   color.Color
+	Success color.Color
 
-	Orange lipgloss.TerminalColor
-	Yellow lipgloss.TerminalColor
-	Purple lipgloss.TerminalColor
+	Orange color.Color
+	Yellow color.Color
+	Purple color.Color
+
+	ProgressStart color.Color
+	ProgressEnd   color.Color
 }
 
 // Dark defines the dark terminal color palette.
 var Dark = Theme{
-	Primary:      lipgloss.Color("170"),
-	Secondary:    lipgloss.Color("245"),
-	Border:       lipgloss.Color("240"),
-	BorderActive: lipgloss.Color("62"),
-	Text:         lipgloss.Color("252"),
-	Muted:        lipgloss.Color("241"),
-	Error:        lipgloss.Color("196"),
-	Success:      lipgloss.Color("42"),
-	Info:         lipgloss.Color("39"),
-	Orange:       lipgloss.Color("208"),
-	Yellow:       lipgloss.Color("220"),
-	Purple:       lipgloss.Color("62"),
+	Primary:       lipgloss.Color("#D75FD7"),
+	Secondary:     lipgloss.Color("#8A8A8A"),
+	Border:        lipgloss.Color("#585858"),
+	BorderActive:  lipgloss.Color("#5F5FD7"),
+	Text:          lipgloss.Color("#D0D0D0"),
+	Muted:         lipgloss.Color("#626262"),
+	Error:         lipgloss.Color("#FF0000"),
+	Success:       lipgloss.Color("#00D787"),
+	Info:          lipgloss.Color("#00AFFF"),
+	Orange:        lipgloss.Color("#FF8700"),
+	Yellow:        lipgloss.Color("#FFD700"),
+	Purple:        lipgloss.Color("#5F5FD7"),
+	ProgressStart: lipgloss.Color("#A78BFA"),
+	ProgressEnd:   lipgloss.Color("#7DD3FC"),
 }
 
 // Light defines the light terminal color palette.
 var Light = Theme{
-	Primary:      lipgloss.Color("170"),
-	Secondary:    lipgloss.Color("248"),
-	Border:       lipgloss.Color("244"),
-	BorderActive: lipgloss.Color("62"),
-	Text:         lipgloss.Color("234"),
-	Muted:        lipgloss.Color("246"),
-	Info:         lipgloss.Color("27"),
-	Error:        lipgloss.Color("160"),
-	Success:      lipgloss.Color("28"),
-	Orange:       lipgloss.Color("208"),
-	Yellow:       lipgloss.Color("220"),
-	Purple:       lipgloss.Color("62"),
+	Primary:       lipgloss.Color("#D75FD7"),
+	Secondary:     lipgloss.Color("#A8A8A8"),
+	Border:        lipgloss.Color("#808080"),
+	BorderActive:  lipgloss.Color("#5F5FD7"),
+	Text:          lipgloss.Color("#1C1C1C"),
+	Muted:         lipgloss.Color("#949494"),
+	Info:          lipgloss.Color("#005FFF"),
+	Error:         lipgloss.Color("#D70000"),
+	Success:       lipgloss.Color("#008700"),
+	Orange:        lipgloss.Color("#FF8700"),
+	ProgressStart: lipgloss.Color("#6D28D9"),
+	ProgressEnd:   lipgloss.Color("#0369A1"),
 }
 
 var (
@@ -141,7 +147,6 @@ func resolve() {
 // terminalLooksDark attempts to detect whether the terminal
 // background is dark using the COLORFGBG environment variable.
 func terminalLooksDark() bool {
-
 	bg := os.Getenv("COLORFGBG")
 
 	if bg == "" {

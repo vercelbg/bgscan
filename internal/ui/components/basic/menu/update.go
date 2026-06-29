@@ -1,10 +1,11 @@
 package menu
 
 import (
+	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // Update handles incoming Bubble Tea messages and updates the menu state.
@@ -27,7 +28,7 @@ func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.updateMenuLayout()
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "enter":
 			if item, ok := m.GetSelected(); ok {
@@ -38,7 +39,7 @@ func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 					return m, m.onSelect(item)
 				}
 			}
-		case "q", tea.KeyEsc.String():
+		case "q", env.KeyEsc:
 			return m, cmd
 		}
 

@@ -3,7 +3,7 @@ package picker
 import (
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Update handles incoming BubbleTea messages for the file picker overlay.

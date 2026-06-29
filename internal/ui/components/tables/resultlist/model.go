@@ -10,7 +10,7 @@ import (
 	"bgscan/internal/ui/shared/ui"
 	"fmt"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 type Model struct {

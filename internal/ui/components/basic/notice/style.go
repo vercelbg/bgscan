@@ -1,9 +1,11 @@
 package notice
 
 import (
+	"image/color"
+
 	"bgscan/internal/ui/theme"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 //
@@ -16,10 +18,10 @@ import (
 // It encapsulates all color and text elements required to render a notice
 // consistently across the UI.
 type levelStyle struct {
-	TitleColor  lipgloss.TerminalColor
-	BorderColor lipgloss.TerminalColor
-	AccentColor lipgloss.TerminalColor
-	Background  lipgloss.TerminalColor
+	TitleColor  color.Color
+	BorderColor color.Color
+	AccentColor color.Color
+	Background  color.Color
 
 	Icon       string
 	FooterText string

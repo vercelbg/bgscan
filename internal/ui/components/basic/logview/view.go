@@ -1,7 +1,7 @@
 package logview
 
 import (
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 // View renders the log viewer component.
@@ -18,7 +18,7 @@ func (m *Model) View() string {
 
 	// Title
 	title := container.Render(
-		TitleStyle(m.viewport.Width).Render(m.title),
+		TitleStyle(m.viewport.Width()).Render(m.title),
 	)
 
 	// Content
@@ -27,7 +27,7 @@ func (m *Model) View() string {
 
 	// Help bar
 	help := container.Render(
-		helpStyle(m.viewport.Width).Render(helpView()),
+		helpStyle(m.viewport.Width()).Render(helpView()),
 	)
 
 	return lipgloss.JoinVertical(
@@ -47,7 +47,7 @@ func (m *Model) renderContentView() string {
 	content := m.viewport.View()
 
 	if m.showBorder {
-		content = BorderStyle(m.viewport.Width).Render(content)
+		content = BorderStyle(m.viewport.Width()).Render(content)
 	}
 
 	return content

@@ -5,9 +5,9 @@ import (
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // LEVEL represents the severity level of a notice.
@@ -56,7 +56,7 @@ type Model struct {
 // The notice displays a titled message with optional scrolling if the
 // message exceeds the available viewport height.
 func New(layout *layout.Layout, title, message string, level LEVEL) *Model {
-	v := viewport.New(0, 0)
+	v := viewport.New()
 
 	m := &Model{
 		id:         ui.NewComponentID(),
@@ -141,8 +141,8 @@ func (m *Model) UpdateSize() {
 
 	m.viewportHeight = min(wrappedMsgHeight, m.viewportHeight)
 
-	m.viewport.Width = m.Width()
-	m.viewport.Height = m.viewportHeight
+	m.viewport.SetWidth(m.Width())
+	m.viewport.SetHeight(m.viewportHeight)
 }
 
 // CloseCmd returns a command that closes the notice component.
@@ -156,4 +156,3 @@ func (m *Model) CloseCmd() tea.Cmd {
 func (m *Model) Mode() env.Mode {
 	return env.NormalMode
 }
-

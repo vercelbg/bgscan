@@ -6,7 +6,7 @@ import (
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
@@ -18,7 +18,7 @@ func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 	lastIdx := len(m.components) - 1
 
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		if env.IsBackKey(msg, m.components[lastIdx].Mode()) && len(m.components) > 1 {
 			return m.popComponent()
 		}

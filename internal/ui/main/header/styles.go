@@ -3,7 +3,7 @@ package header
 import (
 	"bgscan/internal/ui/theme"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 func bannerStyle(width, height int) lipgloss.Style {

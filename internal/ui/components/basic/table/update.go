@@ -3,7 +3,7 @@ package table
 import (
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
@@ -17,11 +17,11 @@ func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 
 		if msg.String() == "?" {
 			m.FullHelp = !m.FullHelp
-			m.updateTableSize()
+			m.updateTableSizeLocked()
 		}
 
 	case tea.WindowSizeMsg:
-		m.updateTableSize()
+		m.updateTableSizeLocked()
 		m.BubbleTable.SetStyles(tableStyles())
 		return m, nil
 	}

@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 	"github.com/dustin/go-humanize"
 )
 
 // View renders the footer component, displaying application
 // information, current status, and runtime metrics.
 func (m *Model) View() string {
-	width := m.layout.Footer.Width
+	padding := 2
+	width := m.layout.Footer.Width - padding
 	height := m.layout.Footer.Height
 
 	// Divide footer into three sections
@@ -30,7 +31,7 @@ func (m *Model) View() string {
 	)
 
 	// Center section: application status
-	centerSection := centerSectionStyle(centerWidth - 3).Render(
+	centerSection := centerSectionStyle(centerWidth).Render(
 		statusTextStyle().Render(m.status),
 	)
 
@@ -43,11 +44,11 @@ func (m *Model) View() string {
 		humanize.Bytes(m.memoryBytes),
 	)
 
-	rightSection := rightSectionStyle(rightWidth + 3).Render(runtimeInfo)
+	rightSection := rightSectionStyle(rightWidth).Render(runtimeInfo)
 
 	// Assemble footer content horizontally
 	footerContent := lipgloss.JoinHorizontal(
-		lipgloss.Top,
+		lipgloss.Left,
 		leftSection,
 		centerSection,
 		rightSection,

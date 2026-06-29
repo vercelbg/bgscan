@@ -13,7 +13,7 @@ import (
 	"bgscan/internal/ui/shared/ui"
 	"bgscan/internal/ui/shared/validation"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Model coordinates outbound configuration additions, list table management,

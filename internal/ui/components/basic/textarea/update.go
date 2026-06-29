@@ -3,7 +3,7 @@ package textarea
 import (
 	"bgscan/internal/ui/shared/ui"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Update processes incoming Bubble Tea messages and updates the state
@@ -31,10 +31,10 @@ func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 		m.textarea.SetWidth(m.Width())
 		return m, cmd
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		value := m.textarea.Value()
 
-		switch msg.Type {
+		switch msg.Code {
 
 		case tea.KeyEnter:
 			return m.handleSubmit(value, cmd)
@@ -63,7 +63,6 @@ func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 // Dynamic validation is enabled after the first submit attempt so that
 // subsequent typing updates the validation state in real time.
 func (m *Model) handleSubmit(value string, inputCmd tea.Cmd) (ui.Component, tea.Cmd) {
-
 	if m.validationFunc == nil {
 		return m, tea.Batch(inputCmd, m.submit(value))
 	}

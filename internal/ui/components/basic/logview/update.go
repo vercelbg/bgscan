@@ -1,11 +1,12 @@
 package logview
 
 import (
-	"bgscan/internal/ui/shared/ui"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"bgscan/internal/ui/shared/ui"
+
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // Update handles BubbleTea messages for the log viewer.
@@ -53,7 +54,7 @@ func (m *Model) renderContent() string {
 		return ""
 	}
 
-	width := max(0, m.viewport.Width-5)
+	width := max(0, m.viewport.Width()-5)
 
 	return lipgloss.NewStyle().
 		Width(width).

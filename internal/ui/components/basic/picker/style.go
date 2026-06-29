@@ -4,7 +4,7 @@ import (
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/theme"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 //

@@ -64,8 +64,8 @@ func (m *model) renderLimitSize(termWidth, termHeight int) string {
 func (m *model) renderOverlays(baseView string) string {
 	view := baseView
 
-	for _, layer := range m.layers {
-		placement := m.getOverlayPlacement(layer.ID())
+	for _, layer := range m.dialog {
+		placement := m.getDialogPlacement(layer.ID())
 
 		view = overlay.Composite(
 			WindowStyle(m.layout.Body.Width).Render(layer.View()),

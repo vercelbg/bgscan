@@ -4,17 +4,18 @@ import (
 	"bgscan/internal/ui/main/body"
 	"bgscan/internal/ui/main/footer"
 	"bgscan/internal/ui/main/header"
+	"bgscan/internal/ui/shared/dialog"
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
 
 	tea "charm.land/bubbletea/v2"
 )
 
-// OverlayPlacement defines how an overlay component
+// dialogPosition defines how an overlay component
 // should be positioned relative to the terminal layout.
-type OverlayPlacement struct {
-	XPos    ui.OverlayPosition
-	YPos    ui.OverlayPosition
+type dialogPosition struct {
+	XPos    dialog.DialogPosition
+	YPos    dialog.DialogPosition
 	XOffset int
 	YOffset int
 }
@@ -25,12 +26,12 @@ type OverlayPlacement struct {
 type model struct {
 	layout *layout.Layout
 
-	// layers contains active overlay components.
-	layers []ui.Component
+	// dialog contains active overlay components.
+	dialog []ui.Component
 
-	// overlayPlacements stores the position metadata
+	// dialogPlacements stores the position metadata
 	// for each overlay component.
-	overlayPlacements map[ui.ComponentID]*OverlayPlacement
+	dialogPlacements map[ui.ComponentID]*dialogPosition
 
 	header ui.Component
 	body   ui.Component
@@ -42,12 +43,12 @@ func New() tea.Model {
 	l := layout.New()
 
 	return &model{
-		layout:            l,
-		layers:            make([]ui.Component, 0, 5),
-		overlayPlacements: make(map[ui.ComponentID]*OverlayPlacement),
-		header:            header.New(l),
-		body:              body.New(l),
-		footer:            footer.New(l),
+		layout:           l,
+		dialog:           make([]ui.Component, 0, 5),
+		dialogPlacements: make(map[ui.ComponentID]*dialogPosition),
+		header:           header.New(l),
+		body:             body.New(l),
+		footer:           footer.New(l),
 	}
 }
 
@@ -60,21 +61,21 @@ func (m *model) Init() tea.Cmd {
 	)
 }
 
-// getOverlayPlacement returns the placement configuration
+// getDialogPlacement returns the placement configuration
 // for an overlay component. If no placement exists,
 // a default centered placement is created and stored.
-func (m *model) getOverlayPlacement(id ui.ComponentID) *OverlayPlacement {
-	if p, ok := m.overlayPlacements[id]; ok {
+func (m *model) getDialogPlacement(id ui.ComponentID) *dialogPosition {
+	if p, ok := m.dialogPlacements[id]; ok {
 		return p
 	}
 
-	p := &OverlayPlacement{
-		XPos:    ui.Center,
-		YPos:    ui.Center,
+	p := &dialogPosition{
+		XPos:    dialog.Center,
+		YPos:    dialog.Center,
 		XOffset: 0,
 		YOffset: 0,
 	}
 
-	m.overlayPlacements[id] = p
+	m.dialogPlacements[id] = p
 	return p
 }

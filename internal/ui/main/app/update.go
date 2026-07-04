@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"bgscan/internal/logger"
+	"bgscan/internal/ui/shared/dialog"
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/ui"
 
@@ -39,9 +40,9 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Overlay back/quit handling
-		if len(m.layers) > 0 {
-			lastIdx := len(m.layers) - 1
-			top := m.layers[lastIdx]
+		if len(m.dialog) > 0 {
+			lastIdx := len(m.dialog) - 1
+			top := m.dialog[lastIdx]
 
 			if env.IsBackKey(msg, top.Mode()) || env.IsQuitKey(msg, top.Mode()) {
 
@@ -49,21 +50,21 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, top.OnClose())
 
 				// Remove overlay placement metadata
-				delete(m.overlayPlacements, top.ID())
+				delete(m.dialogPlacements, top.ID())
 
 				// Remove overlay from stack
-				m.layers[lastIdx] = nil
-				m.layers = m.layers[:lastIdx]
+				m.dialog[lastIdx] = nil
+				m.dialog = m.dialog[:lastIdx]
 
 				return m, tea.Batch(cmds...)
 			}
 		}
 
 	// Add a new overlay component
-	case ui.AddOverlayMsg:
-		m.layers = append(m.layers, msg.Component)
+	case dialog.OpenDialogMsg:
+		m.dialog = append(m.dialog, msg.Component)
 
-		m.overlayPlacements[msg.Component.ID()] = &OverlayPlacement{
+		m.dialogPlacements[msg.Component.ID()] = &dialogPosition{
 			XPos:    msg.XPos,
 			YPos:    msg.YPos,
 			XOffset: msg.XOffset,
@@ -74,16 +75,16 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Close an existing overlay component
 	case ui.CloseComponentMsg:
-		for i, ov := range m.layers {
+		for i, ov := range m.dialog {
 			if ov.ID() == msg.ID {
 
 				cmds = append(cmds, ov.OnClose())
 
 				// Remove overlay safely from slice
-				m.layers = append(m.layers[:i], m.layers[i+1:]...)
+				m.dialog = append(m.dialog[:i], m.dialog[i+1:]...)
 
 				// Remove placement metadata
-				delete(m.overlayPlacements, msg.ID)
+				delete(m.dialogPlacements, msg.ID)
 
 				break
 			}
@@ -93,11 +94,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// --- Overlay Input Routing ---
 
 	// If overlays exist, the top overlay consumes all input.
-	if len(m.layers) > 0 {
-		lastIdx := len(m.layers) - 1
+	if len(m.dialog) > 0 {
+		lastIdx := len(m.dialog) - 1
 
-		newLayer, cmd := m.layers[lastIdx].Update(msg)
-		m.layers[lastIdx] = newLayer
+		newLayer, cmd := m.dialog[lastIdx].Update(msg)
+		m.dialog[lastIdx] = newLayer
 
 		// Block key input from reaching background components
 		if _, ok := msg.(tea.KeyMsg); ok {

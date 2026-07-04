@@ -9,6 +9,7 @@ import (
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
 
+	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -128,6 +129,24 @@ func New(items []MenuItem, title string, layout *layout.Layout) *Model {
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
 	l.SetShowHelp(true)
+	l.SetFilteringEnabled(false)
+	l.AdditionalShortHelpKeys = func() []key.Binding {
+		return []key.Binding{
+			key.NewBinding(
+				key.WithKeys(env.KeyEnter),
+				key.WithHelp(env.KeyEnter, "select"),
+			),
+		}
+	}
+
+	l.AdditionalFullHelpKeys = func() []key.Binding {
+		return []key.Binding{
+			key.NewBinding(
+				key.WithKeys(env.KeyEnter),
+				key.WithHelp(env.KeyEnter, "select"),
+			),
+		}
+	}
 
 	m := &Model{
 		id:     ui.NewComponentID(),

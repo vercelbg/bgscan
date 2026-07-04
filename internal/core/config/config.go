@@ -40,7 +40,7 @@ func Get() *ScannerConfig {
 }
 
 // ============================================================================
-// Thread‑safe Accessors and Setters
+// Thread‑safe Accessors
 // ============================================================================
 
 func GetGeneral() *GeneralConfig { mu.RLock(); defer mu.RUnlock(); return Get().General }
@@ -50,6 +50,10 @@ func GetTCP() *TCPConfig         { mu.RLock(); defer mu.RUnlock(); return Get().
 func GetHTTP() *HTTPConfig       { mu.RLock(); defer mu.RUnlock(); return Get().HTTP }
 func GetXray() *XrayConfig       { mu.RLock(); defer mu.RUnlock(); return Get().Xray }
 func GetDNS() *DNSConfig         { mu.RLock(); defer mu.RUnlock(); return Get().DNS }
+
+// ============================================================================
+// Internal setters — only used by load/save, not exported
+// ============================================================================
 
 func setGeneral(cfg *GeneralConfig) { mu.Lock(); defer mu.Unlock(); Get().General = cfg }
 func setWriter(cfg *WriterConfig)   { mu.Lock(); defer mu.Unlock(); Get().Writer = cfg }
@@ -89,7 +93,9 @@ func configPath(filename string) (string, error) {
 // ============================================================================
 
 // loadConfig loads a TOML configuration file into cfg or falls back to defaults.
-// After loading, it applies the provided setter to update the global state.
+// After loading it applies the provided setter to update the global state.
+// No validation is done here — normalization happens in checkConfigHealth
+// immediately after Init() at startup.
 func loadConfig[T any](filename string, cfg *T, def *T, set func(*T)) error {
 	path, err := configPath(filename)
 	if err != nil {
@@ -105,6 +111,7 @@ func loadConfig[T any](filename string, cfg *T, def *T, set func(*T)) error {
 }
 
 // saveConfig writes cfg to disk as TOML and updates the global in‑memory state.
+// Callers are responsible for validating cfg before calling this.
 func saveConfig[T any](filename string, cfg *T, set func(*T)) error {
 	path, err := configPath(filename)
 	if err != nil {
@@ -120,7 +127,7 @@ func saveConfig[T any](filename string, cfg *T, set func(*T)) error {
 }
 
 // ============================================================================
-// Public Load/Save Entry Points
+// Public Load Entry Points
 // ============================================================================
 
 // LoadGeneralConfig loads general settings from disk.
@@ -133,44 +140,75 @@ func LoadWriterConfig() error {
 	return loadConfig(writerFile, &WriterConfig{}, DefaultWriterConfig(), setWriter)
 }
 
-// LoadICMPConfig loads ICMP settings.
+// LoadICMPConfig loads ICMP settings from disk.
 func LoadICMPConfig() error {
 	return loadConfig(icmpFile, &ICMPConfig{}, DefaultICMPConfig(), setICMP)
 }
 
-// LoadTCPConfig loads TCP settings.
+// LoadTCPConfig loads TCP settings from disk.
 func LoadTCPConfig() error {
 	return loadConfig(tcpFile, &TCPConfig{}, DefaultTCPConfig(), setTCP)
 }
 
-// LoadHTTPConfig loads HTTP settings.
+// LoadHTTPConfig loads HTTP settings from disk.
 func LoadHTTPConfig() error {
 	return loadConfig(httpFile, &HTTPConfig{}, DefaultHTTPConfig(), setHTTP)
 }
 
-// LoadXrayConfig loads Xray vulnerability settings.
+// LoadXrayConfig loads Xray settings from disk.
 func LoadXrayConfig() error {
 	return loadConfig(xrayFile, &XrayConfig{}, DefaultXrayConfig(), setXray)
 }
 
-// LoadDNSConfig loads DNS settings.
+// LoadDNSConfig loads DNS settings from disk.
 func LoadDNSConfig() error {
 	return loadConfig(dnsFile, &DNSConfig{}, DefaultDNSConfig(), setDNS)
 }
 
+// ============================================================================
+// Public Save Entry Points — validate strictly before writing
+// ============================================================================
+
+// SaveGeneralConfig writes it to disk and updates memory.
 func SaveGeneralConfig(cfg *GeneralConfig) error { return saveConfig(generalFile, cfg, setGeneral) }
-func SaveWriterConfig(cfg *WriterConfig) error   { return saveConfig(writerFile, cfg, setWriter) }
-func SaveICMPConfig(cfg *ICMPConfig) error       { return saveConfig(icmpFile, cfg, setICMP) }
-func SaveTCPConfig(cfg *TCPConfig) error         { return saveConfig(tcpFile, cfg, setTCP) }
-func SaveHTTPConfig(cfg *HTTPConfig) error       { return saveConfig(httpFile, cfg, setHTTP) }
-func SaveXrayConfig(cfg *XrayConfig) error       { return saveConfig(xrayFile, cfg, setXray) }
-func SaveDNSConfig(cfg *DNSConfig) error         { return saveConfig(dnsFile, cfg, setDNS) }
+
+// SaveWriterConfig writes it to disk and updates memory.
+func SaveWriterConfig(cfg *WriterConfig) error {
+	return saveConfig(writerFile, cfg, setWriter)
+}
+
+// SaveICMPConfig writes it to disk and updates memory.
+func SaveICMPConfig(cfg *ICMPConfig) error {
+	return saveConfig(icmpFile, cfg, setICMP)
+}
+
+// SaveTCPConfig writes it to disk and updates memory.
+func SaveTCPConfig(cfg *TCPConfig) error {
+	return saveConfig(tcpFile, cfg, setTCP)
+}
+
+// SaveHTTPConfig validates cfg then writes it to disk and updates memory.
+func SaveHTTPConfig(cfg *HTTPConfig) error {
+	return saveConfig(httpFile, cfg, setHTTP)
+}
+
+// SaveXrayConfig validates cfg then writes it to disk and updates memory.
+func SaveXrayConfig(cfg *XrayConfig) error {
+	return saveConfig(xrayFile, cfg, setXray)
+}
+
+// SaveDNSConfig validates cfg then writes it to disk and updates memory.
+func SaveDNSConfig(cfg *DNSConfig) error {
+	return saveConfig(dnsFile, cfg, setDNS)
+}
 
 // ============================================================================
 // Initialization
 // ============================================================================
 
-// Init loads all configuration files into the global singleton instance.
+// Init loads all configuration files into the global singleton.
+// It does NOT validate or normalize — that is done by checkConfigHealth
+// in the startup package immediately after Init() returns.
 func Init() error {
 	loaders := []func() error{
 		LoadGeneralConfig,

@@ -16,18 +16,20 @@ import (
 )
 
 type provider struct {
+	title    string
 	layout   *layout.Layout
 	onSelect func(*iplist.IPFileInfo) tea.Cmd
 }
 
-func newProvider(layout *layout.Layout, onSelect func(*iplist.IPFileInfo) tea.Cmd) crud.Provider[iplist.IPFileInfo] {
+func newProvider(layout *layout.Layout, title string, onSelect func(*iplist.IPFileInfo) tea.Cmd) crud.Provider[iplist.IPFileInfo] {
 	return &provider{
+		title:    title,
 		layout:   layout,
 		onSelect: onSelect,
 	}
 }
 
-func (p *provider) Title() string { return "IP Files" }
+func (p *provider) Title() string { return p.title }
 
 func (p *provider) Columns() []table.Column {
 	return []table.Column{
@@ -104,4 +106,3 @@ func (p *provider) OnRename(item iplist.IPFileInfo, newName string) (tea.Cmd, bo
 func (p *provider) OnAdd(item iplist.IPFileInfo) (tea.Cmd, bool) {
 	return nil, true
 }
-

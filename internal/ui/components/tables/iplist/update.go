@@ -9,12 +9,11 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
-// Update intercepts framework runtime messages and forwards state signals down to active widgets.
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 	switch msg := msg.(type) {
 	case crud.MsgActionTrigger:
 		if msg.ActionType == "add" {
-			return m, picker.NewOpenPickFileCmd(
+			return m, picker.OpenFilePickerCmd(
 				m.layout,
 				"Select IP File (.txt)",
 				"",
@@ -24,7 +23,11 @@ func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 		}
 	}
 
-	updatedCrud, cmd := m.crudTable.Update(msg)
-	m.crudTable = updatedCrud.(*crud.Model[iplist.IPFileInfo])
+	updated, cmd := m.crudTable.Update(msg)
+
+	if table, ok := updated.(*crud.Model[iplist.IPFileInfo]); ok {
+		m.crudTable = table
+	}
+
 	return m, cmd
 }

@@ -7,6 +7,7 @@ import (
 	"bgscan/internal/logger"
 	"bgscan/internal/ui/components/basic/crud"
 	"bgscan/internal/ui/components/basic/input"
+	"bgscan/internal/ui/components/basic/input/textinput"
 	"bgscan/internal/ui/components/basic/notice"
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/layout"
@@ -27,12 +28,12 @@ type Model struct {
 func New(l *layout.Layout, title string, onSelect func(*iplist.IPFileInfo) tea.Cmd) *Model {
 	m := &Model{
 		id:     ui.NewComponentID(),
-		name:   "iplist",
+		name:   "IP Files",
 		layout: l,
 	}
 
 	canAdd := true
-	m.crudTable = crud.New("ip file", l, newProvider(l, onSelect), canAdd)
+	m.crudTable = crud.New("IP File", l, newProvider(l, title, onSelect), canAdd)
 
 	return m
 }
@@ -64,13 +65,15 @@ func (m *Model) handleFileSelect(path string) tea.Cmd {
 		return nil
 	}
 
-	return input.ShowInputCmd(
+	inp := textinput.New(
 		m.layout,
 		"What do you want to call this IP file?",
-		"filename",
-		"",
-		validation.ValidateFilename,
-		nil,
+		textinput.WithPlaceholder("filename"),
+		textinput.WithValue(""),
+		textinput.WithValidation(validation.ValidateFilename),
+		textinput.WithFocus(),
+	)
+	inp.OnSubmit(
 		func(filename string) tea.Cmd {
 			return tea.Sequence(
 				m.saveIPFileCmd(path, filename),
@@ -78,6 +81,8 @@ func (m *Model) handleFileSelect(path string) tea.Cmd {
 			)
 		},
 	)
+
+	return input.OpenInputDialog(inp)
 }
 
 // saveIPFileCmd contractually isolates filesystem disk operations away from the main loop thread.
@@ -98,4 +103,3 @@ func (m *Model) saveIPFileCmd(srcPath, filename string) tea.Cmd {
 		return nil
 	}
 }
-

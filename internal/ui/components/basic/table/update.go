@@ -7,6 +7,9 @@ import (
 )
 
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -15,9 +18,10 @@ func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 			cmds = append(cmds, cmd)
 		}
 
+		// Toggle Full Help
 		if msg.String() == "?" {
 			m.FullHelp = !m.FullHelp
-			m.updateTableSizeLocked()
+			m.updateTableSizeLocked() // Now safely inside the lock
 		}
 
 	case tea.WindowSizeMsg:

@@ -1,10 +1,6 @@
 package table
 
 import (
-	"strings"
-
-	"bgscan/internal/logger"
-
 	"charm.land/lipgloss/v2"
 )
 
@@ -12,13 +8,6 @@ func (m *Model) View() string {
 	width := m.Layout.Body.Width
 
 	tableView := tableViewStyle(width).Render(m.BubbleTable.View())
-	// Temporary — in View()
-	logger.DebugInfo("DEBUG layout w=%d tableW=%d tablePHad=%d", m.Layout.Body.Width, m.tableWidthLocked(), tableHPad)
-	rendered := m.BubbleTable.View()
-	lines := strings.Split(rendered, "\n")
-	if len(lines) > 0 {
-		logger.DebugInfo("DEBUG rendered line width=%d", len([]rune(lines[0])))
-	}
 
 	return lipgloss.NewStyle().
 		Width(width).

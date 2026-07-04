@@ -5,9 +5,11 @@ import (
 	"bgscan/internal/logger"
 	"bgscan/internal/ui/components/basic/crud"
 	"bgscan/internal/ui/components/basic/input"
+	"bgscan/internal/ui/components/basic/input/textarea"
+	"bgscan/internal/ui/components/basic/input/textinput"
 	"bgscan/internal/ui/components/basic/notice"
-	"bgscan/internal/ui/components/basic/textarea"
 	"bgscan/internal/ui/components/menus/outboundmenu"
+	"bgscan/internal/ui/shared/dialog"
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
@@ -50,7 +52,7 @@ func (m *Model) Mode() env.Mode     { return m.crudTable.Mode() }
 func (m *Model) ShowAdditionMethod() tea.Cmd {
 	return func() tea.Msg {
 		m.outboundMenu = outboundmenu.New(m.layout)
-		return ui.AddNewOverlay(m.outboundMenu, ui.Center, ui.Center, 0, 0)
+		return dialog.OpenDialog(m.outboundMenu)
 	}
 }
 
@@ -61,55 +63,72 @@ func (m *Model) handleFileSelect(path string) tea.Cmd {
 		return nil
 	}
 
-	return input.ShowInputCmd(
+	inp := textinput.New(
 		m.layout,
 		"What do you want to call this outbound?",
-		"outbound name",
-		"",
-		validation.ValidateFilename,
-		nil,
-		func(filename string) tea.Cmd {
-			return tea.Sequence(
-				m.saveOutboundFromFileCmd(path, filename),
-				func() tea.Msg { return crud.MsgRefresh{} },
-			)
-		},
+		textinput.WithPlaceholder("outbound name"),
+		textinput.WithValue(""),
+		textinput.WithValidation(validation.ValidateFilename),
+		textinput.WithFocus(),
+		textinput.WithOnSubmit(
+			func(filename string) tea.Cmd {
+				return tea.Sequence(
+					m.saveOutboundFromFileCmd(path, filename),
+					func() tea.Msg { return crud.MsgRefresh{} },
+				)
+			},
+		),
 	)
+
+	return input.OpenInputDialog(inp)
 }
 
 // handleLinkImport starts the sharing link parsing sequence and asks for a destination name.
 func (m *Model) handleLinkImport() tea.Cmd {
-	return textarea.ShowInputCmd(
+	linkInput := textarea.New(
 		m.layout,
 		"Enter your outbound link:",
-		"vless://, vmess://, trojan://, etc...",
-		"",
-		8,
-		validation.ValidateXrayLink,
-		nil,
-		func(link string) tea.Cmd {
-			// Pre-validate link formatting layers before moving forward
-			if _, err := xray.ParseLink(link); err != nil {
-				return notice.NewNoticeCmd(m.layout, "Parsing Error", err.Error(), notice.NOTICE_ERROR)
-			}
-
-			// Capture target configuration storage identity tags
-			return input.ShowInputCmd(
-				m.layout,
-				"What do you want to call this link template?",
-				"link profile name",
-				"",
-				validation.ValidateFilename,
-				nil,
-				func(filename string) tea.Cmd {
-					return tea.Sequence(
-						m.saveOutboundFromLinkCmd(link, filename),
-						func() tea.Msg { return crud.MsgRefresh{} },
-					)
-				},
-			)
-		},
+		textarea.WithHeight(15),
+		textarea.WithValidation(validation.ValidateXrayLink),
+		textarea.WithFocus(),
+		textarea.WithValue(""),
 	)
+
+	linkInput.OnSubmit(func(link string) tea.Cmd {
+		// validate early
+		if _, err := xray.ParseLink(link); err != nil {
+			return notice.NewNoticeCmd(
+				m.layout,
+				"Parsing Error",
+				err.Error(),
+				notice.NOTICE_ERROR,
+			)
+		}
+
+		return m.openFilenameDialog(link)
+	})
+
+	return input.OpenInputDialog(linkInput)
+}
+
+func (m *Model) openFilenameDialog(link string) tea.Cmd {
+	nameInput := textinput.New(
+		m.layout,
+		"What do you want to call this link template?",
+		textinput.WithPlaceholder("link profile name"),
+		textinput.WithValue(""),
+		textinput.WithValidation(validation.ValidateFilename),
+		textinput.WithFocus(),
+	)
+
+	nameInput.OnSubmit(func(filename string) tea.Cmd {
+		return tea.Sequence(
+			m.saveOutboundFromLinkCmd(link, filename),
+			func() tea.Msg { return crud.MsgRefresh{} },
+		)
+	})
+
+	return input.OpenInputDialog(nameInput)
 }
 
 // ── Private Framework Command Utilities ──────────────────────────────────────

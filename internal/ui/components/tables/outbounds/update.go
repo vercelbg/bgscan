@@ -13,31 +13,41 @@ import (
 func (m *Model) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 	switch msg := msg.(type) {
 
-	// Catch the clean hotkey notification intercepted from the inner controller
+	// Catch action trigger from inner controller
 	case crud.MsgActionTrigger:
 		if msg.ActionType == "add" {
 			return m, m.ShowAdditionMethod()
 		}
 
+	// Import method selection from outbound menu
 	case outboundmenu.MsgSelectImportMethod:
-		if msg.Method == outboundmenu.MethodJSON {
-			return m,
-				tea.Sequence(m.closeOutboundMenu(),
-					picker.NewOpenPickFileCmd(
-						m.layout,
-						"Select outbound template (.json)",
-						"",
-						[]string{".json"},
-						m.handleFileSelect,
-					))
-		}
+		switch msg.Method {
 
-		if msg.Method == outboundmenu.MethodLink {
-			return m, tea.Sequence(m.closeOutboundMenu(), m.handleLinkImport())
+		case outboundmenu.MethodJSON:
+			return m, tea.Sequence(
+				m.closeOutboundMenu(),
+				picker.OpenFilePickerCmd(
+					m.layout,
+					"Select outbound template (.json)",
+					"",
+					[]string{".json"},
+					m.handleFileSelect,
+				),
+			)
+
+		case outboundmenu.MethodLink:
+			return m, tea.Sequence(
+				m.closeOutboundMenu(),
+				m.handleLinkImport(),
+			)
 		}
 	}
 
-	updatedCrud, cmd := m.crudTable.Update(msg)
-	m.crudTable = updatedCrud.(*crud.Model[xray.XrayOutboundsFile])
+	updated, cmd := m.crudTable.Update(msg)
+
+	if table, ok := updated.(*crud.Model[xray.XrayOutboundsFile]); ok {
+		m.crudTable = table
+	}
+
 	return m, cmd
 }

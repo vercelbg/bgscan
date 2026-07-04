@@ -61,7 +61,7 @@ func New(l *layout.Layout, name string, rows []result.IPScanResult, mode ViewMod
 	if mode == ShortView {
 		cols = ipShortListColumns
 	}
-	t := table.New(name, cols, []table.Row{}, l)
+	t := table.New(l, table.WithColumns(cols), table.WithRows([]table.Row{}))
 
 	m := &Model{
 		id:       ui.NewComponentID(),
@@ -83,6 +83,7 @@ func (m *Model) Init() tea.Cmd {
 func (m *Model) SetRows(rows []result.IPScanResult) {
 	m.updateRows(rows)
 }
+
 func (m *Model) Table() *table.Model {
 	if t, ok := m.table.(*table.Model); ok {
 		return t

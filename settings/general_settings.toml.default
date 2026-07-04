@@ -2,69 +2,59 @@
 # General Scanner Settings
 # =====================================================================
 
-# Interval (in milliseconds) for sending status updates to the UI.
-# This controls how often progress information is pushed.
-# Example: 1000 → update every 1 second.
+# The interval (in milliseconds) for pushing status updates to the UI.
+# Controls how frequently progress information is refreshed.
+# Example: 1000 updates the UI every 1 second.
 status_interval = 1000
 
-# Stop scanning after this many successful results.
-# A “successful result” means the target passed the scan conditions.
+# The maximum number of successful results before halting the scan.
+# A "successful result" is defined as a target passing the scan conditions.
 #
 # Behavior:
-#   0   = disabled (scan all IPs)
-#   N   = stop after N successful hits
+#   0 = Disabled (scan all targets)
+#   N = Stop after N successful hits
 #
-# NOTE:
-#   In chain-mode scanning, this limit ONLY applies to the FINAL STAGE.
-#   (Chain support for this limit is not implemented yet.)
+# NOTE: In pipeline mode, this limit currently applies only to the final stage.
 stop_after_found = 0
 
-# Maximum number of IPs to read from the input source.
-# Useful for sampling large IP lists or limiting heavy scans.
+# The maximum number of IPs to read from the input source.
+# Useful for sampling large IP lists or limiting resource-intensive scans.
 #
 # Behavior:
-#   0   = no limit (read all IPs)
-#   N   = read at most N IPs
+#   0 = No limit (read all available IPs)
+#   N = Read at most N IPs
 max_ips_to_test = 0
 
-# Enable IP shuffling to randomize target order. 
-# This prevents slamming the same subnet/network block and avoids triggering firewall alerts.
+# Randomizes the target IP order before scanning.
+# This prevents overwhelming specific subnets and helps avoid triggering firewall alerts.
 shuffled = true
 
 # =====================================================================
 # Pipeline Execution Mode
 # =====================================================================
 
-# pipeline_mode defines how multi-stage scanning is executed.
+# The execution mode for multi-stage scanning.
 #
 # Available modes:
+#   "sequential" → Disk-based chain. Each stage waits for the previous one 
+#                  to finish. Lowest RAM usage, but slowest due to disk I/O.
 #
-#   "sequential" → Sequential, disk-based chain.
-#                  Each stage waits for the previous one to finish.
-#                  Lowest RAM usage, but slowest due to disk I/O.
+#   "streaming"  → Channel-based streaming. All stages run simultaneously, 
+#                  streaming IPs via buffered channels. Highest throughput 
+#                  and ideal for large datasets.
 #
-#   "streaming"  → All stages run simultaneously and stream IPs between
-#                  stages using buffered channels. Highest throughput.
-#                  Ideal for real-time scanning and large datasets.
+#   "batch"      → Hybrid model. IPs are processed in batches, with each 
+#                  batch going through all stages sequentially. Offers 
+#                  predictable memory usage compared to streaming.
 #
-#   "batch"      → Batch-based hybrid model. IPs are processed in batches,
-#                  and each batch goes through all stages sequentially.
-#                  More predictable memory usage than "streaming".
-#                  Good when stages have different performance costs.
-#
-# Example:
-#   pipeline_mode = "streaming"
-#
-# Default: "sequential"
+# Default: "streaming"
 pipeline_mode = "streaming"
 
-# MaxIPsPerStage: the maximum number of IPs a stage can hold in chain mode.
-# When this limit is reached, the previous stage will be blocked
-# until space becomes available. This is a fixed hard cap
+# The maximum number of IPs a pipeline stage can hold in memory.
+# When this hard cap is reached, the previous stage is blocked until 
+# space becomes available.
 max_ips_per_stage = 100000 
 
-# batch_size: number of IPs per batch in pipeline mode.
-# Only applies when chain_mode = "pipeline".
-# Example: N → each batch of N IPs goes through all stages sequentially.
+# The number of IPs processed per batch when using the "batch" pipeline mode.
+# Example: 1000 means each batch of 1000 IPs goes through all stages sequentially.
 batch_size = 1000
-

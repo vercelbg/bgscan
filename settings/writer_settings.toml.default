@@ -1,14 +1,17 @@
-# Result writer configuration
+# =====================================================================
+# Result Writer Configuration
+# =====================================================================
 
-# Interval (milliseconds) for merging the delta results
-# into the main result file.
+# The interval (in milliseconds) for merging delta results into the main result file.
+# This controls how frequently partial scan results are committed to disk.
 merge_flush_interval = 2000
 
-# Capacity of the internal channel used by scanner workers
-# to send IP scan results to the writer goroutine.
+# The capacity of the internal channel used by scanner workers to send 
+# IP scan results to the writer goroutine.
+# Higher values can help prevent worker bottlenecks during heavy disk I/O.
 chan_size = 4096
 
-# Initial capacity of the in-memory batch used to accumulate
-# IPScanResult entries before flushing to disk.
+# The initial capacity of the in-memory batch used to accumulate 
+# IP scan results before flushing them to disk.
+# Higher values reduce the frequency of disk writes but increase memory usage.
 batch_size = 4096
-

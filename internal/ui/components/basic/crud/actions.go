@@ -1,8 +1,6 @@
 package crud
 
 import (
-	"fmt"
-
 	"bgscan/internal/ui/components/basic/table"
 	"bgscan/internal/ui/shared/env"
 
@@ -14,42 +12,38 @@ type MsgActionTrigger struct{ ActionType string }
 func (m *Model[T]) configureKeymaps() {
 	var keys []table.ActionKey
 
-	// Select (Enter)
 	if _, ok := m.provider.OnSelect(m.zeroValue()); ok {
 		keys = append(keys, table.NewKey(
 			[]string{env.KeyEnter},
 			"select",
-			fmt.Sprintf("Select %s", m.name),
+			"select item",
 			func() tea.Msg { return MsgActionTrigger{ActionType: "select"} },
 		))
 	}
 
-	// Add (only if supported)
 	if m.CanAdd() {
 		keys = append(keys, table.NewKey(
 			[]string{"a"},
 			"add",
-			fmt.Sprintf("Add %s", m.name),
+			"create item",
 			func() tea.Msg { return MsgActionTrigger{ActionType: "add"} },
 		))
 	}
 
-	// Delete
 	if _, ok := m.provider.OnDelete(m.zeroValue()); ok {
 		keys = append(keys, table.NewKey(
 			[]string{"x"},
 			"delete",
-			fmt.Sprintf("Delete %s", m.name),
+			"delete item",
 			func() tea.Msg { return MsgActionTrigger{ActionType: "delete"} },
 		))
 	}
 
-	// Rename
 	if _, ok := m.provider.OnRename(m.zeroValue(), ""); ok {
 		keys = append(keys, table.NewKey(
 			[]string{"r"},
 			"rename",
-			fmt.Sprintf("Rename %s", m.name),
+			"rename item",
 			func() tea.Msg { return MsgActionTrigger{ActionType: "rename"} },
 		))
 	}

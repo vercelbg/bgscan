@@ -5,11 +5,14 @@ import (
 	"bgscan/internal/ui/shared/env"
 	"bgscan/internal/ui/shared/layout"
 	"bgscan/internal/ui/shared/ui"
+
 	tea "charm.land/bubbletea/v2"
 )
 
-type AddFunc[T any] func() (T, error)
-type MsgRefresh struct{}
+type (
+	AddFunc[T any] func() (T, error)
+	MsgRefresh     struct{}
+)
 
 type Model[T any] struct {
 	id       ui.ComponentID
@@ -29,7 +32,6 @@ func New[T any](
 	provider Provider[T],
 	canAdd bool,
 ) *Model[T] {
-
 	m := &Model[T]{
 		id:       ui.NewComponentID(),
 		name:     name,
@@ -39,7 +41,13 @@ func New[T any](
 		itemsMap: make(map[string]T),
 	}
 
-	m.table = table.New(provider.Title(), provider.Columns(), []table.Row{}, l)
+	m.table = table.New(
+		l,
+		table.WithTitle(provider.Title()),
+		table.WithColumns(provider.Columns()),
+		table.WithRows([]table.Row{}),
+	)
+
 	m.configureKeymaps()
 
 	return m
@@ -57,8 +65,4 @@ func (m *Model[T]) Mode() env.Mode     { return env.NormalMode }
 // CanAdd returns whether the Add operation is available
 func (m *Model[T]) CanAdd() bool {
 	return m.canAdd
-}
-
-func RefreshCmd() tea.Msg {
-	return MsgRefresh{}
 }

@@ -7,6 +7,7 @@ import (
 	"bgscan/internal/logger"
 	"bgscan/internal/ui/components/basic/confirm"
 	"bgscan/internal/ui/components/basic/input"
+	"bgscan/internal/ui/components/basic/input/textinput"
 	"bgscan/internal/ui/components/basic/notice"
 	"bgscan/internal/ui/components/basic/table"
 	"bgscan/internal/ui/shared/ui"
@@ -20,6 +21,7 @@ type (
 	msgError         struct{ err error }
 )
 
+// RefreshCmd loads items from the provider.
 func (m *Model[T]) RefreshCmd() tea.Msg {
 	items, err := m.provider.Load()
 	if err != nil {
@@ -49,6 +51,7 @@ func (m *Model[T]) Update(msg tea.Msg) (ui.Component, tea.Cmd) {
 		switch msg.ActionType {
 		case "select":
 			cmd = m.handleSelect()
+		case "add":
 		case "delete":
 			cmd = m.requestDeletion()
 		case "rename":
@@ -96,10 +99,17 @@ func (m *Model[T]) requestDeletion() tea.Cmd {
 	if !ok {
 		return nil
 	}
-	itemName := m.table.BubbleTable.SelectedRow()[0]
+
+	// FIX: Safely access SelectedRow to prevent panic if table is empty
+	row := m.table.BubbleTable.SelectedRow()
+	if row == nil || len(row) == 0 {
+		return nil
+	}
+	itemID := row[0] // Based on getSelected() logic, row[0] is the ID
+
 	return confirm.ConfirmCmd(
 		m.layout,
-		fmt.Sprintf("Delete %s '%s'?", m.name, itemName),
+		fmt.Sprintf("Delete %s '%s'?", m.name, itemID),
 		tea.Sequence(delCmd, func() tea.Msg { return MsgRefresh{} }),
 		false,
 	)
@@ -110,27 +120,35 @@ func (m *Model[T]) handleRequestRename() tea.Cmd {
 	if err != nil {
 		return notice.NewNoticeCmd(m.layout, "Selection", err.Error(), notice.NOTICE_INFO)
 	}
-	itemName := m.table.BubbleTable.SelectedRow()[0]
-	return input.ShowInputCmd(
+
+	row := m.table.BubbleTable.SelectedRow()
+	if row == nil || len(row) == 0 {
+		return nil
+	}
+	itemID := row[0]
+
+	inp := textinput.New(
 		m.layout,
 		fmt.Sprintf("Enter new name for %s:", m.name),
-		"new name",
-		itemName,
-		validation.ValidateFilename,
-		nil,
-		func(newName string) tea.Cmd {
+		textinput.WithPlaceholder("new name"),
+		textinput.WithValue(itemID), // Pre-fill with current ID/name
+		textinput.WithValidation(validation.ValidateFilename),
+		textinput.WithFocus(),
+		textinput.WithOnSubmit(func(newName string) tea.Cmd {
 			cmd, ok := m.provider.OnRename(item, newName)
 			if !ok {
 				return nil
 			}
 			return tea.Sequence(cmd, func() tea.Msg { return MsgRefresh{} })
-		},
+		}),
 	)
+
+	return input.OpenInputDialog(inp)
 }
 
 func (m *Model[T]) getSelected() (T, error) {
 	row := m.table.BubbleTable.SelectedRow()
-	if row == nil {
+	if row == nil || len(row) == 0 {
 		var zero T
 		return zero, errors.New("no row selected")
 	}

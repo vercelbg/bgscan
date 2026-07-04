@@ -30,7 +30,6 @@ func DefaultICMPConfig() *ICMPConfig {
 		Workers:      200,
 		Timeout:      NewDurationMS(2 * time.Second),
 		Tries:        1,
-		ShuffleIPs:   true,
 		PrefixOutput: "icmp_",
 	}
 }
@@ -41,7 +40,6 @@ func DefaultTCPConfig() *TCPConfig {
 		Workers:      200,
 		Port:         80,
 		Timeout:      NewDurationMS(3 * time.Second),
-		ShuffleIPs:   true,
 		Tries:        1,
 		PrefixOutput: "tcp_",
 	}
@@ -58,7 +56,6 @@ func DefaultHTTPConfig() *HTTPConfig {
 		MinTLSVersion: "tls1.1",
 		MaxTLSVersion: "tls1.3",
 		Timeout:       NewDurationMS(4 * time.Second),
-		ShuffleIPs:    true,
 		PrefixOutput:  "http_",
 	}
 }

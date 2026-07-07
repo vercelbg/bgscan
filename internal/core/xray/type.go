@@ -77,7 +77,11 @@ type SniffingSetting struct {
 }
 
 type XrayOutboundsFile struct {
-	Name        string    // File name (without extension).
-	CreatedTime time.Time // File modification or creation timestamp.
-	Path        string    // Absolute filesystem path to the file.
+	Name        string    // File name without extension.
+	CreatedTime time.Time // File modification time.
+	Path        string    // Template file path.
+
+	Protocol string // vless, vmess, trojan, shadowsocks...
+	Network  string // tcp, ws, grpc, xhttp...
+	UseTLS   bool   // whether transport security is TLS
 }

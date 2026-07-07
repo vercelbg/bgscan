@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
 	"bgscan/internal/core/fileutil"
 	"bgscan/internal/logger"
@@ -60,25 +59,24 @@ func applyOutboundTemplate(templatePath, ip string) (any, error) {
 		return nil, fmt.Errorf("failed to parse outbound template JSON: %w", err)
 	}
 
-	modified := replacePlaceholders(parsed, map[string]string{
+	return replacePlaceholders(parsed, map[string]string{
 		addressPlaceholder: ip,
-	})
-
-	return modified, nil
+	}), nil
 }
 
 // ── 2. Template Saving Logic ─────────────────────────────────────────────────
 
 // SaveOutboundFromFile validates and stores a new outbound template from a disk source file.
 func SaveOutboundFromFile(src, name string) (*XrayOutboundsFile, error) {
-	// Check source details
 	srcInfo, err := os.Stat(src)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("source outbound file does not exist: %s", src)
 		}
+
 		return nil, fmt.Errorf("cannot access source file %s: %w", src, err)
 	}
+
 	if srcInfo.IsDir() {
 		return nil, fmt.Errorf("source path is a directory, expected file: %s", src)
 	}
@@ -101,7 +99,7 @@ func SaveOutboundFromFile(src, name string) (*XrayOutboundsFile, error) {
 	}
 
 	if !containsAddressPlaceholder(jsonData) {
-		return nil, fmt.Errorf("outbound template missing required placeholder: \"address\": %q", addressPlaceholder)
+		return nil, fmt.Errorf("outbound template missing required placeholder: %q", addressPlaceholder)
 	}
 
 	if err := os.WriteFile(dst, data, 0o644); err != nil {
@@ -118,11 +116,7 @@ func SaveOutboundFromFile(src, name string) (*XrayOutboundsFile, error) {
 		return nil, fmt.Errorf("outbound validation failed: %w", err)
 	}
 
-	return &XrayOutboundsFile{
-		Name:        fileutil.StripExt(name),
-		Path:        dst,
-		CreatedTime: time.Now(),
-	}, nil
+	return loadOutboundFileMetadata(dst)
 }
 
 // SaveOutboundFromLink parses an outbound sharing URL link, converts it to an
@@ -149,10 +143,10 @@ func SaveOutboundFromLink(link, name string) (*XrayOutboundsFile, error) {
 	if err := json.Unmarshal(data, &jsonValidationAny); err != nil {
 		return nil, fmt.Errorf("serialized validation fallback failed: %w", err)
 	}
+
 	if !containsAddressPlaceholder(jsonValidationAny) {
-		return nil, fmt.Errorf("link template missing required placeholder: \"address\": %q", addressPlaceholder)
+		return nil, fmt.Errorf("link template missing required placeholder: %q", addressPlaceholder)
 	}
-	logger.DebugDump("jsonValidationAny", jsonValidationAny)
 
 	if err := os.WriteFile(dst, data, 0o644); err != nil {
 		return nil, fmt.Errorf("failed to save outbound template from link: %w", err)
@@ -160,17 +154,13 @@ func SaveOutboundFromLink(link, name string) (*XrayOutboundsFile, error) {
 
 	if err := ValidateOutbound(name); err != nil {
 		if err := os.Remove(dst); err != nil {
-			logger.CoreError("failed to remove  outbound file: %v", err)
+			logger.CoreError("failed to remove outbound file: %v", err)
 		}
 
 		return nil, fmt.Errorf("outbound validation failed: %w", err)
 	}
 
-	return &XrayOutboundsFile{
-		Name:        fileutil.StripExt(name),
-		Path:        dst,
-		CreatedTime: time.Now(),
-	}, nil
+	return loadOutboundFileMetadata(dst)
 }
 
 // ── 3. Template Operations & Retrieval ───────────────────────────────────────
@@ -178,18 +168,10 @@ func SaveOutboundFromLink(link, name string) (*XrayOutboundsFile, error) {
 // GetOutboundTemplateByName finds an outbound template by name, automatically handling extensions.
 func GetOutboundTemplateByName(name string) (*XrayOutboundsFile, error) {
 	name = normalizeTemplateName(name)
+
 	path := filepath.Join(templatePath, name)
 
-	info, err := os.Stat(path)
-	if err != nil {
-		return nil, fmt.Errorf("cannot read outbound template %s: %w", path, err)
-	}
-
-	return &XrayOutboundsFile{
-		Name:        fileutil.StripExt(name),
-		CreatedTime: info.ModTime(),
-		Path:        path,
-	}, nil
+	return loadOutboundFileMetadata(path)
 }
 
 // ListOutboundTemplates returns a list of all existing template metadata objects saved on disk.
@@ -204,12 +186,15 @@ func ListOutboundTemplates() ([]XrayOutboundsFile, error) {
 	}
 
 	templates := make([]XrayOutboundsFile, 0, len(files))
+
 	for _, f := range files {
-		templates = append(templates, XrayOutboundsFile{
-			Name:        fileutil.StripExt(f.Name),
-			Path:        f.Path,
-			CreatedTime: f.Info.ModTime(),
-		})
+		meta, err := loadOutboundFileMetadata(f.Path)
+		if err != nil {
+			logger.CoreError("failed to parse outbound metadata: %v", err)
+			continue
+		}
+
+		templates = append(templates, *meta)
 	}
 
 	return templates, nil
@@ -223,6 +208,7 @@ func RenameOutboundTemplate(oldName, newName string) (*XrayOutboundsFile, error)
 	}
 
 	newName = normalizeTemplateName(newName)
+
 	dst := filepath.Join(templatePath, newName)
 
 	if _, err := os.Stat(dst); err == nil {
@@ -233,11 +219,7 @@ func RenameOutboundTemplate(oldName, newName string) (*XrayOutboundsFile, error)
 		return nil, fmt.Errorf("failed to execute rename command: %w", err)
 	}
 
-	return &XrayOutboundsFile{
-		Name:        fileutil.StripExt(newName),
-		Path:        dst,
-		CreatedTime: oldFile.CreatedTime,
-	}, nil
+	return loadOutboundFileMetadata(dst)
 }
 
 // ── 4. Validation & Internal Helpers ──────────────────────────────────────────
@@ -258,6 +240,52 @@ func ValidateOutbound(outbound string) error {
 	return ValidateConfig(configPath)
 }
 
+// loadOutboundFileMetadata reads an outbound template and extracts
+// metadata used by bgscan.
+//
+// Missing fields are ignored and keep their Go zero values.
+func loadOutboundFileMetadata(path string) (*XrayOutboundsFile, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &XrayOutboundsFile{
+		Name:        fileutil.StripExt(filepath.Base(path)),
+		Path:        path,
+		CreatedTime: info.ModTime(),
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var outbound map[string]any
+	if err := json.Unmarshal(data, &outbound); err != nil {
+		return nil, err
+	}
+
+	if protocol, ok := outbound["protocol"].(string); ok {
+		result.Protocol = protocol
+	}
+
+	streamSettings, ok := outbound["streamSettings"].(map[string]any)
+	if !ok {
+		return result, nil
+	}
+
+	if network, ok := streamSettings["network"].(string); ok {
+		result.Network = network
+	}
+
+	if security, ok := streamSettings["security"].(string); ok {
+		result.UseTLS = security == "tls"
+	}
+
+	return result, nil
+}
+
 // containsAddressPlaceholder recursively checks if the address placeholder string token exists.
 func containsAddressPlaceholder(v any) bool {
 	switch val := v.(type) {
@@ -268,6 +296,7 @@ func containsAddressPlaceholder(v any) bool {
 					return true
 				}
 			}
+
 			if containsAddressPlaceholder(v2) {
 				return true
 			}
@@ -285,5 +314,6 @@ func normalizeTemplateName(name string) string {
 	if ext := filepath.Ext(name); ext != ".json" {
 		name = strings.TrimSuffix(name, ext) + ".json"
 	}
+
 	return name
 }

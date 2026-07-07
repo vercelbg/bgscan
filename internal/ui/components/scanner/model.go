@@ -84,7 +84,7 @@ func New(layout *layout.Layout, maxIPs int, scn *scanner.Scanner) *Model {
 
 	for i, stage := range stages {
 		viewMode := ipviewer.ShortView
-		if stage.Mode == scanner.XRAY_SCAN {
+		if stage.Mode == scanner.XRAYScan {
 			viewMode = ipviewer.FullView
 		}
 

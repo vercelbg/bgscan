@@ -40,10 +40,10 @@ func New(layout *layout.Layout, input string) *Model {
 	}
 
 	m.menu = menu.New([]menu.MenuItem{
-		menu.NewMenuItem("▦", "ICMP Scan", "i", m.open(scanner.ICMP_SCAN)),
-		menu.NewMenuItem("≡", "TCP Scan", "t", m.open(scanner.TCP_SCAN)),
-		menu.NewMenuItem("▦", "HTTP Scan", "h", m.open(scanner.HTTP_SCAN)),
-		menu.NewMenuItem("#", "DNS Scan", "d", m.open(scanner.RESOLVE_SCAN)),
+		menu.NewMenuItem("▦", "ICMP Scan", "i", m.open(scanner.ICMPScan)),
+		menu.NewMenuItem("≡", "TCP Scan", "t", m.open(scanner.TCPScan)),
+		menu.NewMenuItem("▦", "HTTP Scan", "h", m.open(scanner.HTTPScan)),
+		menu.NewMenuItem("#", "DNS Scan", "d", m.open(scanner.DNSResolveScan)),
 		menu.NewMenuItem("▦", "Xray Scan", "x", m.openXrayTemplates()),
 	}, "Select Scan Type", layout)
 
@@ -82,7 +82,7 @@ func (m *Model) openXrayTemplates() tea.Cmd {
 	return ui.OpenComponentCmd(
 		outbounds.New(m.layout, "select outbound", func(xof *xray.XrayOutboundsFile) tea.Cmd {
 			m.xrayTemplate = xof.Name
-			return m.open(scanner.XRAY_SCAN)
+			return m.open(scanner.XRAYScan)
 		}),
 	)
 }
@@ -95,11 +95,11 @@ func (m *Model) createScanner(mode scanner.ScanMode, input string) (*scanner.Sca
 	ctx := context.Background()
 	scn := scanner.NewScanner(ctx, input)
 
-	if mode == scanner.XRAY_SCAN {
+	if mode == scanner.XRAYScan {
 		return m.buildXrayScanner(ctx, scn)
 	}
 
-	if mode == scanner.RESOLVE_SCAN {
+	if mode == scanner.DNSResolveScan {
 		return m.buildResolveScanner(ctx, scn)
 	}
 
@@ -114,11 +114,11 @@ func (m *Model) createScanner(mode scanner.ScanMode, input string) (*scanner.Sca
 
 func (m *Model) buildStage(ctx context.Context, scn *scanner.Scanner, mode scanner.ScanMode) (scanner.StageConfig, error) {
 	switch mode {
-	case scanner.TCP_SCAN:
+	case scanner.TCPScan:
 		return scn.BuildTCPStage(ctx)
-	case scanner.ICMP_SCAN:
+	case scanner.ICMPScan:
 		return scn.BuildICMPStage(ctx)
-	case scanner.HTTP_SCAN:
+	case scanner.HTTPScan:
 		return scn.BuildHTTPStage(ctx)
 	default:
 		return scn.BuildTCPStage(ctx)

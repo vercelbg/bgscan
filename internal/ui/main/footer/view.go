@@ -31,7 +31,7 @@ func (m *Model) View() string {
 	)
 
 	// Center section: application status
-	centerSection := centerSectionStyle(centerWidth).Render(
+	centerSection := centerSectionStyle(centerWidth - 2).Render(
 		statusTextStyle().Render(m.status),
 	)
 
@@ -44,7 +44,7 @@ func (m *Model) View() string {
 		humanize.Bytes(m.memoryBytes),
 	)
 
-	rightSection := rightSectionStyle(rightWidth).Render(runtimeInfo)
+	rightSection := rightSectionStyle(rightWidth + 2).Render(runtimeInfo)
 
 	// Assemble footer content horizontally
 	footerContent := lipgloss.JoinHorizontal(

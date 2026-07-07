@@ -10,6 +10,24 @@ var allowedProtocols = []string{"http", "https"}
 
 var allowedTLSVersions = []string{"tls1.0", "tls1.1", "tls1.2", "tls1.3"}
 
+var allowedHTTPVersions = []string{
+	"h1",
+	"http1",
+	"http1.1",
+
+	"h2",
+	"http2",
+
+	"h1,h2",
+	"http1,http2",
+	"http1.1,http2",
+	"http2,http1",
+	"http2,http1.1",
+
+	"h3",
+	"http3",
+}
+
 // ValidateHTTP validates an HTTPConfig strictly.
 // Returns a map of field name → error for every invalid field.
 // Used by the UI OnValidate hook and SaveHTTPConfig.
@@ -41,6 +59,10 @@ func ValidateHTTP(cfg *config.HTTPConfig) map[string]error {
 		errs["Timeout"] = err
 	}
 
+	if err := checkEnum("HTTP Version", cfg.Version, allowedHTTPVersions); err != nil {
+		errs["Version"] = err
+	}
+
 	if err := checkEnum("MinTLSVersion", cfg.MinTLSVersion, allowedTLSVersions); err != nil {
 		errs["MinTLSVersion"] = err
 	}
@@ -56,6 +78,10 @@ func ValidateHTTP(cfg *config.HTTPConfig) map[string]error {
 
 	if err := checkPrefix("PrefixOutput", cfg.PrefixOutput); err != nil {
 		errs["PrefixOutput"] = err
+	}
+
+	if err := checkStatusCodes("AcceptedStatusCodes", cfg.AcceptedStatusCodes); err != nil {
+		errs["AcceptedStatusCodes"] = err
 	}
 
 	return errs
@@ -74,7 +100,7 @@ func NormalizeHTTP(cfg *config.HTTPConfig) []Warning {
 	fixEnum("Protocol", &cfg.Protocol, allowedProtocols, def.Protocol, &warns)
 	fixHost("Host", &cfg.Host, def.Host, &warns)
 	fixSNI("ServerName", &cfg.ServerName, def.ServerName, &warns)
-
+	fixEnum("Version", &cfg.Version, allowedHTTPVersions, def.Version, &warns)
 	fixDurationMS("Timeout", &cfg.Timeout,
 		100*time.Millisecond, 60*time.Second, def.Timeout, &warns)
 

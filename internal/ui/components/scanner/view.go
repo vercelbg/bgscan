@@ -1,9 +1,10 @@
 package scanner
 
 import (
-	"bgscan/internal/core/scanner/engine"
 	"fmt"
 	"time"
+
+	"bgscan/internal/core/scanner/engine"
 
 	"charm.land/lipgloss/v2"
 )
@@ -111,7 +112,6 @@ func (m *Model) statusText() string {
 
 // estimateRemaining formats the ETA text.
 func (m *Model) estimateRemaining(p engine.Progress) string {
-
 	left := p.ETA.Truncate(time.Second)
 
 	if left <= 0 {

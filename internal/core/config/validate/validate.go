@@ -78,7 +78,8 @@ func checkString(field, v string) error {
 }
 
 func checkEnum(field, v string, allowed []string) error {
-	if slices.Contains(allowed, v) {
+	s := strings.ToLower(v)
+	if slices.Contains(allowed, s) {
 		return nil
 	}
 	return fmt.Errorf("%s must be one of %s", field, strings.Join(allowed, ", "))
@@ -184,6 +185,16 @@ func checkSNI(field, sni string) error {
 	return nil
 }
 
+// checkStatusCodes validates that all status codes are in the valid HTTP range
+func checkStatusCodes(fieldName string, codes []int) error {
+	for _, c := range codes {
+		if !isValidHTTPStatusCode(c) {
+			return fmt.Errorf("%s: invalid status code %d (must be 100-599)", fieldName, c)
+		}
+	}
+	return nil
+}
+
 // pubKeyRegex matches a 64-character hexadecimal string (common for Curve25519/Ed25519 keys).
 var pubKeyRegex = regexp.MustCompile(`^[a-fA-F0-9]{64}$`)
 
@@ -281,6 +292,15 @@ func fixSNI(field string, v *string, def string, warns *[]Warning) {
 	}
 }
 
+// fixHTTP Code
+func fixHTTP(field string, v *string, def string, warns *[]Warning) {
+	if err := checkHost(field, *v); err != nil {
+		old := *v
+		*v = def
+		*warns = append(*warns, Warning{field, old, def, err.Error() + " → default"})
+	}
+}
+
 // fixEnumOrder verifies that the 'min' value appears before or at the same
 // index as the 'max' value in the provided ordered slice. If the order is
 // invalid, it resets both fields to their respective defaults.
@@ -298,6 +318,24 @@ func fixEnumOrder(minField, maxField string, minVal, maxVal *string, minDef, max
 			NewVal: fmt.Sprintf("%s, %s", minDef, maxDef),
 			Reason: err.Error() + " → defaults",
 		})
+	}
+}
+
+// fixPubKey auto-corrects an invalid public key to the default value.
+func fixPubKey(field string, v *string, def string, warns *[]Warning) {
+	if err := checkPubKey(field, *v); err != nil {
+		old := *v
+		*v = def
+		*warns = append(*warns, Warning{field, old, def, err.Error() + " → default"})
+	}
+}
+
+// fixPrefix auto-corrects an invalid prefix to the default value.
+func fixPrefix(field string, v *string, def string, warns *[]Warning) {
+	if err := checkPrefix(field, *v); err != nil {
+		old := *v
+		*v = def
+		*warns = append(*warns, Warning{field, old, def, err.Error() + " → default"})
 	}
 }
 
@@ -344,20 +382,7 @@ func isValidDomain(host string) bool {
 	return true
 }
 
-// fixPubKey auto-corrects an invalid public key to the default value.
-func fixPubKey(field string, v *string, def string, warns *[]Warning) {
-	if err := checkPubKey(field, *v); err != nil {
-		old := *v
-		*v = def
-		*warns = append(*warns, Warning{field, old, def, err.Error() + " → default"})
-	}
-}
-
-// fixPrefix auto-corrects an invalid prefix to the default value.
-func fixPrefix(field string, v *string, def string, warns *[]Warning) {
-	if err := checkPrefix(field, *v); err != nil {
-		old := *v
-		*v = def
-		*warns = append(*warns, Warning{field, old, def, err.Error() + " → default"})
-	}
+// isValidHTTPStatusCode checks if a status code is a valid HTTP status code (100-599)
+func isValidHTTPStatusCode(code int) bool {
+	return code >= 100 && code <= 599
 }

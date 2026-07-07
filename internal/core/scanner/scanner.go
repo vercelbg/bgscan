@@ -22,13 +22,13 @@ import (
 type ScanMode string
 
 const (
-	ICMP_SCAN       ScanMode = "ICMP"
-	TCP_SCAN        ScanMode = "TCP"
-	HTTP_SCAN       ScanMode = "HTTP"
-	XRAY_SCAN       ScanMode = "Xray"
-	RESOLVE_SCAN    ScanMode = "Resolve"
-	DNSTT_SCAN      ScanMode = "DNSTT"
-	SLIPSTREAM_SCAN ScanMode = "Slipstream"
+	ICMPScan       ScanMode = "ICMP"
+	TCPScan        ScanMode = "TCP"
+	HTTPScan       ScanMode = "HTTP"
+	XRAYScan       ScanMode = "Xray"
+	DNSResolveScan ScanMode = "Resolve"
+	DNSTTscan      ScanMode = "DNSTT"
+	SLIPSTREAMScan ScanMode = "Slipstream"
 )
 
 //
@@ -198,7 +198,7 @@ func (s *Scanner) BuildICMPStage(ctx context.Context) (StageConfig, error) {
 	}
 
 	return StageConfig{
-		Mode:    ICMP_SCAN,
+		Mode:    ICMPScan,
 		Workers: cfg.Workers,
 		Probe:   prb,
 		Writer:  writer,
@@ -219,7 +219,7 @@ func (s *Scanner) BuildTCPStage(ctx context.Context) (StageConfig, error) {
 	prb := probe.NewTCPProbe(fmt.Sprint(cfg.Port), cfg.Timeout.Duration(), cfg.Tries)
 
 	return StageConfig{
-		Mode:    TCP_SCAN,
+		Mode:    TCPScan,
 		Workers: cfg.Workers,
 		Probe:   prb,
 		Writer:  writer,
@@ -237,19 +237,44 @@ func (s *Scanner) BuildHTTPStage(ctx context.Context) (StageConfig, error) {
 	if err != nil {
 		return StageConfig{}, err
 	}
+
+	// Select probe based on HTTP version
+	if isHTTP3(cfg.Version) {
+		reqCfg, err := probe.NewHTTP3RequestFromConfig(*cfg)
+		if err != nil {
+			return StageConfig{}, err
+		}
+		prb, err := probe.NewHTTP3Probe(*reqCfg, cfg.AcceptedStatusCodes)
+		if err != nil {
+			return StageConfig{}, err
+		}
+		return StageConfig{
+			Mode:    HTTPScan,
+			Workers: cfg.Workers,
+			Probe:   prb,
+			Writer:  writer,
+			Rate:    calcRate(cfg.Workers, 80*time.Millisecond),
+		}, nil
+	}
+
+	// HTTP/1.1 or HTTP/2 (or both via ALPN)
 	reqCfg, err := probe.NewHTTPRequestFromConfig(*cfg)
 	if err != nil {
 		return StageConfig{}, err
 	}
-	prb := probe.NewHTTPProbe(*reqCfg)
+	prb := probe.NewHTTPProbe(*reqCfg, cfg.AcceptedStatusCodes)
 
 	return StageConfig{
-		Mode:    HTTP_SCAN,
+		Mode:    HTTPScan,
 		Workers: cfg.Workers,
 		Probe:   prb,
 		Writer:  writer,
 		Rate:    calcRate(cfg.Workers, 80*time.Millisecond),
 	}, nil
+}
+
+func isHTTP3(version string) bool {
+	return version == "h3" || version == "http3"
 }
 
 func (s *Scanner) BuildXrayStage(ctx context.Context, template string) (StageConfig, error) {
@@ -268,7 +293,7 @@ func (s *Scanner) BuildXrayStage(ctx context.Context, template string) (StageCon
 	}
 
 	return StageConfig{
-		Mode:    XRAY_SCAN,
+		Mode:    XRAYScan,
 		Workers: cfg.Workers,
 		Probe:   prb,
 		Writer:  writer,
@@ -308,7 +333,7 @@ func (s *Scanner) BuildResolveStage(ctx context.Context) (StageConfig, error) {
 	})
 
 	return StageConfig{
-		Mode:    RESOLVE_SCAN,
+		Mode:    DNSResolveScan,
 		Workers: cfg.Workers,
 		Probe:   prb,
 		Writer:  writer,
@@ -341,7 +366,7 @@ func (s *Scanner) BuildDNSTTStage(ctx context.Context) (StageConfig, error) {
 	}
 
 	return StageConfig{
-		Mode:    DNSTT_SCAN,
+		Mode:    DNSTTscan,
 		Workers: cfg.Workers,
 		Probe:   prb,
 		Writer:  writer,
@@ -372,7 +397,7 @@ func (s *Scanner) BuildSlipStreamStage(ctx context.Context) (StageConfig, error)
 	}
 
 	return StageConfig{
-		Mode:    SLIPSTREAM_SCAN,
+		Mode:    SLIPSTREAMScan,
 		Workers: cfg.Workers,
 		Probe:   prb,
 		Writer:  writer,

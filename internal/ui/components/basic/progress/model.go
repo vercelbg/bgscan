@@ -77,7 +77,7 @@ func (m *Model) Init() tea.Cmd {
 //   - internal horizontal padding
 func (m *Model) Width() int {
 	width := min(m.layout.Body.Width, maxWidth)
-	return width - padding*2
+	return width - padding*10
 }
 
 // ID returns the unique component identifier.

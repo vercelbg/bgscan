@@ -99,7 +99,7 @@ DNS Tunnel support with a fallback mechanism for complex resolution scenarios.
 |:--------:|:-----:|-------------|
 | **ICMP** | 3 | Host discovery and reachability via Ping |
 | **TCP** | 4 | Connection scanning and TCP handshake validation |
-| **HTTP** | 7 | Full HTTP/1.1 and HTTP/2 support *(no QUIC / HTTP/3)* |
+| **HTTP** | 7 | Full HTTP/1.1 and HTTP/2 and  HTTP/3 (QUIC) |
 | **TLS** | 7 | TLS 1.0 through TLS 1.3 |
 | **DNS** | 7 | Advanced DNS queries with fallback mechanism |
 | **DNSTT** | 7 | DNS Tunnel validation *(SOCKS only, no auth)* |

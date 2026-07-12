@@ -1,6 +1,9 @@
-baseURL: http://0.0.0.0:1313/
-title: Documentation
-theme: hugo-book
+baseURL: "https://MohsenBg.github.io/bgscan/"
+title: "Documentation"
+theme: "hugo-book"
+relativeURLs: false
+canonifyURLs: false
+
 
 copyright: "© 2026 MohsenBg. All rights reserved."
 

@@ -1,10 +1,18 @@
-
-# Ignore all .txt files
+# ------------------------------------
+# General & Hugo Build Artifacts
+# ------------------------------------
 *.txt
+public/
+resources/
+.hugo_build.lock
+.docs-replacement-holder
 
+# Explicitly ignore Hugo build folders inside docs 
+docs/public/
+docs/resources/
 
 # ------------------------------------
-# Go build files
+# Go Build & Binary Files
 # ------------------------------------
 /bin/
 /build/
@@ -20,13 +28,16 @@
 *.so
 *.dylib
 *.test
+__debug_bin*
 
-# Go modules
-/go.sum
+# Go modules (CRITICAL: go.sum MUST be tracked, only ignore vendor)
 /vendor/
 
-# Logs
+# Logs & Local Results
 *.log
+/[Ll]ogs/
+/result/
+/[Tt]mp/
 
 # Dependency directories
 pkg/
@@ -37,7 +48,31 @@ pkg/
 *.local
 
 # ------------------------------------
-# IDE / Editor ignores
+# Project Specific (Assets, Settings, IPs)
+# ------------------------------------
+
+# Ignore everything in the root assets folder (binaries like dnstt-client)
+assets/*
+
+# Allow xray directory and its contents, except the actual compiled binary and dat files
+!assets/xray/
+assets/xray/xray*
+assets/xray/*.dat
+assets/xray/configs/
+assets/xray/outbounds/*.json
+
+# Allow example files to be tracked
+!assets/xray/outbounds/*.example
+
+# Ignore local user settings and generated IP lists (keeps .default files tracked)
+settings/*.toml
+ips/*.csv
+
+# Ignore local builder output
+bgscan-builder*
+
+# ------------------------------------
+# IDE / Editor Ignores
 # ------------------------------------
 
 # VSCode
@@ -47,57 +82,19 @@ pkg/
 # JetBrains IDEs (GoLand, IntelliJ IDEA, etc.)
 .idea/
 *.iml
-out/
 
 # Sublime Text
 *.sublime-project
 *.sublime-workspace
 
-# Vim
+# Vim / Emacs
 *.swp
 *.swo
 *.vim
-
-# Emacs
 *~
 \#*\#
 .\#*
 
-# MacOS
+# OS specific
 .DS_Store
-
-# Windows
 Thumbs.db
-
-
-# project
-/[Tt]mp
-/[Ll]ogs
-/result
-
-
-__debug_bin*
-
-
-# ignore everything in assets
-assets/*
-
-# allow xray directory
-!assets/xray/
-assets/xray/xray*
-assets/xray/*.dat
-assets/xray/configs
-assets/xray/outbounds/*.json
-
-
-# allow example files
-!assets/xray/outbounds/*.example
-
-
-
-#settings
-settings/*.toml
-ips/*.csv
-
-#bgscan-builder
-bgscan-builder*

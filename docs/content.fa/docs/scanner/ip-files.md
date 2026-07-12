@@ -70,7 +70,7 @@ weight: 4
 | `r` | تغییر نام (Rename) — تغییر نام فایل انتخاب‌شده |
 | `x` | حذف (Delete) — پاک کردن دائمی فایل انتخاب‌شده |
 
-![bgscan iplist](/bgscan-iplist.webp)
+{{< img "/bgscan-iplist.webp" "bgscan iplist" >}}
 
 #### افزودن فایل (`a`)
 
@@ -84,7 +84,7 @@ weight: 4
 
 هنگام وارد کردن، تک‌تک خطوط پردازش و استانداردسازی می‌شوند. خطوط نامعتبر بدون ایجاد خطا در کل فرآیند، خودبه‌خود کنار گذاشته می‌شوند.
 
-![bgscan select iplist](/bgscan-select-iplist.webp)
+{{< img "/bgscan-select-iplist.webp" "bgscan select iplist" >}}
 
 #### تغییر نام فایل (`r`)
 

@@ -23,7 +23,7 @@ weight: 2
 >
 > این زیرمجموعه‌ها به صورت مجزا در فایل تنظیمات DNS کنترل و مدیریت می‌شوند.
 
-![bgscan scan type](/bgscan-scan-type.webp)
+{{< img "/bgscan-scan-type.webp" "bgscan scan type" >}}
 
 ## جزئیات مربوط به انواع اسکن
 

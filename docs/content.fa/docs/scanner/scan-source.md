@@ -14,7 +14,7 @@ weight: 1
 
 ---
 
-![bgscan scan source](/bgscan-target-source.webp)
+{{< img "/bgscan-target-source.webp" "bgscan scan source" >}}
 
 ## لیست آی‌پی (IP List)
 

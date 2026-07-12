@@ -13,7 +13,7 @@ weight: 6
 
 ---
 
-![bgscan outbound menu](/bgscan-outbound-menu.webp)
+{{< img "/bgscan-outbound-menu.webp" "bgscan outbound menu" >}}
 
 ## جدول اوت‌باندها
 
@@ -37,7 +37,7 @@ weight: 6
 
 ---
 
-![bgscan outbound empty](/bgscan-outbound-empty.webp)
+{{< img "/bgscan-outbound-empty.webp" "bgscan outbound empty" >}}
 
 ## افزودن اوت‌باند جدید (`a`)
 
@@ -49,7 +49,7 @@ weight: 6
 
 گزینه **From Link** را انتخاب کرده و لینک اشتراک پروکسی خود را وارد کنید. ابزار bgscan به طور خودکار لینک را آنالیز (Parse) کرده و آن را به عنوان یک قالب ذخیره می‌کند.
 
-![bgscan outbound link](/bgscan-outbound-link.webp)
+{{< img "/bgscan-outbound-link.webp" "bgscan outbound link" >}}
 
 فرمت لینک‌های پشتیبانی‌شده:
 
@@ -69,8 +69,8 @@ a → From Link → Paste link → Enter name → Done
 
 ```
 
-![bgscan outbound select link](/bgscan-outbound-select-link.webp)
-![bgscan outbound name](/bgscan-outbound-name.webp)
+{{< img "/bgscan-outbound-select-link.webp" "bgscan outbound select link" >}}
+{{< img "/bgscan-outbound-name.webp" "bgscan outbound name" >}}
 
 ---
 
@@ -78,7 +78,7 @@ a → From Link → Paste link → Enter name → Done
 
 گزینه **From JSON File** را انتخاب کرده و یک فایل با پسوند `.json` از روی سیستم خود انتخاب کنید. ابزار bgscan صحت فایل را بررسی کرده و آن را به عنوان قالب ذخیره می‌کند.
 
-![bgscan outbound select json](/bgscan-outbound-select-json.webp)
+{{< img "/bgscan-outbound-select-json.webp" "bgscan outbound select json" >}}
 
 فایل JSON باید حاوی **تنها یک آبجکت اوت‌باند** باشد، نه یک کانفیگ کامل Xray. همچنین این فایل باید شامل پلیس‌هولدر (متغیر جایگزین) `"$ADDRESS"` در فیلد `address` باشد؛ bgscan در زمان اسکن، این متغیر را با تک‌تک آی‌پ‌ی‌های هدف جایگزین می‌کند.
 

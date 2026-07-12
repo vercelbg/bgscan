@@ -29,7 +29,7 @@ weight: 5
 | `r` | تغییر نام فایل انتخاب‌شده |
 | `x` | حذف دائمی فایل انتخاب‌شده |
 
-![bgscan result file](/bgscan-result.webp)
+{{< img "/bgscan-result.webp" "bgscan result file" >}}
 
 #### باز کردن یک فایل نتیجه
 

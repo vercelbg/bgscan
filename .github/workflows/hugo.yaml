@@ -2,7 +2,9 @@ name: Deploy Hugo Docs to GitHub Pages
 
 on:
   push:
-    branches: ["main"] 
+    branches: ["main"]
+    paths:
+      - "docs/**" 
   workflow_dispatch:
 
 permissions:

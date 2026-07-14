@@ -124,10 +124,12 @@ func (s *Scanner) Run() {
 }
 
 func (s *Scanner) runSingle(stage StageConfig, hooks engine.ScanHooks) {
+	maxIP := max(config.GetGeneral().MaxIPsToTest, 0)
+
 	engine.RunScan(
 		s.ctx,
 		s.input,
-		config.GetGeneral().MaxIPsToTest,
+		uint64(maxIP),
 		engine.ScanConfig{
 			Workers: stage.Workers,
 			Probe:   stage.Probe,
@@ -141,6 +143,8 @@ func (s *Scanner) runSingle(stage StageConfig, hooks engine.ScanHooks) {
 }
 
 func (s *Scanner) runChain(stages []StageConfig) {
+	maxIP := max(config.GetGeneral().MaxIPsToTest, 0)
+
 	engineStages := make([]engine.ScanConfig, len(stages))
 	for i, stage := range stages {
 		engineStages[i] = engine.ScanConfig{
@@ -151,7 +155,7 @@ func (s *Scanner) runChain(stages []StageConfig) {
 			Hooks:   stage.Hooks,
 		}
 	}
-	engine.RunScanWithChain(s.ctx, s.input, config.GetGeneral().MaxIPsToTest, &engine.ChainConfig{
+	engine.RunScanWithChain(s.ctx, s.input, uint64(maxIP), &engine.ChainConfig{
 		Mode:      engine.ParsePipelineMode(config.GetGeneral().PipelineMode),
 		Stages:    engineStages,
 		Pause:     s.pause,

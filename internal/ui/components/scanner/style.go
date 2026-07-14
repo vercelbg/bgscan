@@ -7,28 +7,25 @@ import (
 )
 
 func scannedStyle() lipgloss.Style {
-	return lipgloss.NewStyle().
-		Foreground(theme.Current().Yellow)
+	return lipgloss.NewStyle().Bold(true).Foreground(theme.Current().Yellow)
 }
 
 func leftStyle() lipgloss.Style {
-	return lipgloss.NewStyle().
-		Foreground(theme.Current().Info)
+	return lipgloss.NewStyle().Bold(true).Foreground(theme.Current().Info)
 }
 
 func foundStyle() lipgloss.Style {
-	return lipgloss.NewStyle().
-		Foreground(theme.Current().Success)
+	return lipgloss.NewStyle().Bold(true).Foreground(theme.Current().Success)
 }
 
 func elapsedStyle() lipgloss.Style {
-	return lipgloss.NewStyle().
-		Foreground(theme.Current().Purple)
+	return lipgloss.NewStyle().Bold(true).Foreground(theme.Current().Purple)
 }
 
 func elapsedEndStyle() lipgloss.Style {
-	return lipgloss.NewStyle().
-		Foreground(theme.Current().Orange)
+	return lipgloss.NewStyle().Bold(true).Foreground(theme.Current().Orange)
 }
 
-func separatorStyle() lipgloss.Style { return lipgloss.NewStyle().Foreground(theme.Current().Primary) }
+func separatorStyle() lipgloss.Style {
+	return lipgloss.NewStyle().Bold(true).Foreground(theme.Current().Primary)
+}

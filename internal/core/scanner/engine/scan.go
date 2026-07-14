@@ -18,7 +18,7 @@ import (
 func RunScan(
 	ctx context.Context,
 	input string,
-	maxIP int,
+	maxIP uint64,
 	cfg ScanConfig,
 	shuffled bool,
 	pause *PauseController,
@@ -36,7 +36,7 @@ func RunScan(
 		return
 	}
 
-	workers := min(cfg.Workers, int(total))
+	workers := int(min(uint64(cfg.Workers), total))
 	if workers <= 0 {
 		workers = 1
 	}

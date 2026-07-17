@@ -50,9 +50,8 @@ type Model struct {
 	currentTab int
 
 	// Results
-	results [][]result.IPScanResult
-	batch   [][]result.IPScanResult
-
+	results [][]result.Result
+	batch   [][]result.Result
 	// State
 	mu           sync.Mutex
 	status       []StageStatus
@@ -74,8 +73,8 @@ func New(layout *layout.Layout, maxIPs int, scn *scanner.Scanner) *Model {
 		maxIPs:       maxIPs,
 		progress:     make([]ui.Component, n),
 		ipViewers:    make([]ui.Component, n),
-		results:      make([][]result.IPScanResult, n),
-		batch:        make([][]result.IPScanResult, n),
+		results:      make([][]result.Result, n),
+		batch:        make([][]result.Result, n),
 		status:       make([]StageStatus, n),
 		progressInfo: make([]engine.Progress, n),
 	}
@@ -83,17 +82,12 @@ func New(layout *layout.Layout, maxIPs int, scn *scanner.Scanner) *Model {
 	tabsList := make([]tabs.Tab[int], n)
 
 	for i, stage := range stages {
-		viewMode := ipviewer.ShortView
-		if stage.Mode == scanner.XRAYScan {
-			viewMode = ipviewer.FullView
-		}
-
-		m.ipViewers[i] = createIPViewer(layout, viewMode)
+		m.ipViewers[i] = createIPViewer(layout, stage.Probe.Schema())
 		m.progress[i] = progress.New(layout)
-		m.results[i] = make([]result.IPScanResult, 0, maxIPs)
-		m.batch[i] = make([]result.IPScanResult, 0, 128)
+		m.results[i] = make([]result.Result, 0, maxIPs)
+		m.batch[i] = make([]result.Result, 0, 128)
 		m.status[i] = StatusWaiting
-		tabsList[i] = tabs.NewTab(string(stage.Mode), i)
+		tabsList[i] = tabs.NewTab(stage.Probe.Schema().Name, i)
 	}
 
 	m.tabs = tabs.New(layout, tabsList, func(idx int, _ tabs.Tab[int]) tea.Cmd {
@@ -137,8 +131,8 @@ func (m *Model) tick() tea.Cmd {
 	return tea.Tick(interval, func(time.Time) tea.Msg { return tickMsg{} })
 }
 
-func (m *Model) onSuccess(i int) func(result.IPScanResult) {
-	return func(ip result.IPScanResult) {
+func (m *Model) onSuccess(i int) func(result.Result) {
+	return func(ip result.Result) {
 		m.mu.Lock()
 		m.batch[i] = append(m.batch[i], ip)
 		m.mu.Unlock()
@@ -180,7 +174,7 @@ func (m *Model) onScanEnd(i int) func() {
 // mergeBatch merges staged results into the main result set.
 // Uses swap-slice pattern to minimize lock duration.
 func (m *Model) mergeBatch() {
-	for i := range m.stages {
+	for i, stage := range m.stages {
 		m.mu.Lock()
 		if len(m.batch[i]) == 0 {
 			m.mu.Unlock()
@@ -190,11 +184,26 @@ func (m *Model) mergeBatch() {
 		newBatch := m.batch[i]
 		m.batch[i] = m.batch[i][:0]
 		m.mu.Unlock()
+		for i, batch := range newBatch {
+			rec := batch.ToRecord()
+			normalizedRs, err := stage.Probe.Schema().Parser(rec)
+			if err != nil {
+				continue
+			}
+			newBatch[i] = normalizedRs
+		}
 
 		m.results[i] = append(m.results[i], newBatch...)
 
-		sort.Slice(m.results[i], func(a, b int) bool {
-			return m.results[i][a].Less(m.results[i][b])
+		sort.SliceStable(m.results[i], func(a, b int) bool {
+			scoreA := m.results[i][a].Score()
+			scoreB := m.results[i][b].Score()
+
+			if scoreA != scoreB {
+				return scoreA > scoreB
+			}
+
+			return m.results[i][a].Key() < m.results[i][b].Key()
 		})
 
 		if len(m.results[i]) > m.maxIPs {
@@ -225,8 +234,8 @@ func (m *Model) currentError() error {
 	return m.scanError
 }
 
-func createIPViewer(layout *layout.Layout, mode ipviewer.ViewMode) ui.Component {
-	viewer := ipviewer.New(layout, "", nil, mode)
+func createIPViewer(layout *layout.Layout, schema result.ResultSchema) ui.Component {
+	viewer := ipviewer.New(layout, "", nil, schema)
 
 	viewer.Table().SetKeys(
 		table.NewKey([]string{env.KeyTab}, "tab", "next tab", nil),

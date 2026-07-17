@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"bgscan/internal/core/speedtest"
 	"bgscan/internal/logger"
 )
 
@@ -121,4 +122,20 @@ func FormatIntList(value any) string {
 	}
 
 	return FormatStringList(l)
+}
+
+func FormatDataSpeed(v any) string {
+	s, ok := v.(string)
+	if !ok {
+		return ""
+	}
+
+	kpbs, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		logger.UIError("Error while casting type to uint64")
+		return ""
+	}
+
+	speed := speedtest.BitsPerSec(kpbs * 1000)
+	return speed.String()
 }

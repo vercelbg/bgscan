@@ -19,6 +19,16 @@ import (
 	"bgscan/internal/ui/shared/ui"
 )
 
+type ScanType uint8
+
+const (
+	ICMPScan ScanType = iota
+	TCPScan
+	HTTPScan
+	DNSResolveScan
+	XRAYScan
+)
+
 type Model struct {
 	id           ui.ComponentID
 	name         string
@@ -40,10 +50,10 @@ func New(layout *layout.Layout, input string) *Model {
 	}
 
 	m.menu = menu.New([]menu.MenuItem{
-		menu.NewMenuItem("▦", "ICMP Scan", "i", m.open(scanner.ICMPScan)),
-		menu.NewMenuItem("≡", "TCP Scan", "t", m.open(scanner.TCPScan)),
-		menu.NewMenuItem("▦", "HTTP Scan", "h", m.open(scanner.HTTPScan)),
-		menu.NewMenuItem("#", "DNS Scan", "d", m.open(scanner.DNSResolveScan)),
+		menu.NewMenuItem("▦", "ICMP Scan", "i", m.open(ICMPScan)),
+		menu.NewMenuItem("≡", "TCP Scan", "t", m.open(TCPScan)),
+		menu.NewMenuItem("▦", "HTTP Scan", "h", m.open(HTTPScan)),
+		menu.NewMenuItem("#", "DNS Scan", "d", m.open(DNSResolveScan)),
 		menu.NewMenuItem("▦", "Xray Scan", "x", m.openXrayTemplates()),
 	}, "Select Scan Type", layout)
 
@@ -66,7 +76,7 @@ func (m *Model) OnClose() tea.Cmd {
 // Scanner entry
 // ------------------------------------------------------------
 
-func (m *Model) open(mode scanner.ScanMode) tea.Cmd {
+func (m *Model) open(mode ScanType) tea.Cmd {
 	return func() tea.Msg {
 		scn, err := m.createScanner(mode, m.input)
 		if err != nil {
@@ -82,7 +92,7 @@ func (m *Model) openXrayTemplates() tea.Cmd {
 	return ui.OpenComponentCmd(
 		outbounds.New(m.layout, "select outbound", func(xof *xray.XrayOutboundsFile) tea.Cmd {
 			m.xrayTemplate = xof.Name
-			return m.open(scanner.XRAYScan)
+			return m.open(XRAYScan)
 		}),
 	)
 }
@@ -91,15 +101,15 @@ func (m *Model) openXrayTemplates() tea.Cmd {
 // Scanner builder
 // ------------------------------------------------------------
 
-func (m *Model) createScanner(mode scanner.ScanMode, input string) (*scanner.Scanner, error) {
+func (m *Model) createScanner(mode ScanType, input string) (*scanner.Scanner, error) {
 	ctx := context.Background()
 	scn := scanner.NewScanner(ctx, input)
 
-	if mode == scanner.XRAYScan {
+	if mode == XRAYScan {
 		return m.buildXrayScanner(ctx, scn)
 	}
 
-	if mode == scanner.DNSResolveScan {
+	if mode == DNSResolveScan {
 		return m.buildResolveScanner(ctx, scn)
 	}
 
@@ -112,13 +122,13 @@ func (m *Model) createScanner(mode scanner.ScanMode, input string) (*scanner.Sca
 	return scn, nil
 }
 
-func (m *Model) buildStage(ctx context.Context, scn *scanner.Scanner, mode scanner.ScanMode) (scanner.StageConfig, error) {
+func (m *Model) buildStage(ctx context.Context, scn *scanner.Scanner, mode ScanType) (scanner.StageConfig, error) {
 	switch mode {
-	case scanner.TCPScan:
+	case TCPScan:
 		return scn.BuildTCPStage(ctx)
-	case scanner.ICMPScan:
+	case ICMPScan:
 		return scn.BuildICMPStage(ctx)
-	case scanner.HTTPScan:
+	case HTTPScan:
 		return scn.BuildHTTPStage(ctx)
 	default:
 		return scn.BuildTCPStage(ctx)

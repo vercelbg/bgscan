@@ -2,7 +2,6 @@ package ipviewer
 
 import (
 	"fmt"
-	"time"
 
 	"bgscan/internal/core/result"
 	"bgscan/internal/ui/components/basic/notice"
@@ -43,24 +42,12 @@ func (m *Model) copySelectedIP() tea.Cmd {
 	return m.infoCmd("IP Copied", fmt.Sprintf("IP copied to clipboard:%s", row[0]))
 }
 
-func (m *Model) updateRows(rows []result.IPScanResult) {
+func (m *Model) updateRows(rows []result.Result) {
 	limit := min(len(rows), int(m.maxRow))
 	list := make([]table.Row, 0, limit)
 
 	for _, row := range rows[:limit] {
-		if m.viewMode == ShortView {
-			list = append(list, table.Row{
-				row.IP,
-				row.Latency.Truncate(time.Millisecond).String(),
-			})
-		} else {
-			list = append(list, table.Row{
-				row.IP,
-				row.Latency.Truncate(time.Millisecond).String(),
-				row.Download.Truncate(time.Millisecond).String(),
-				row.Upload.Truncate(time.Millisecond).String(),
-			})
-		}
+		list = append(list, row.ToRecord())
 	}
 
 	m.rows = list

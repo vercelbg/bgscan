@@ -1,9 +1,8 @@
 package app
 
 import (
-	"bytes"
+	"fmt"
 	"runtime"
-	"runtime/pprof"
 	"strings"
 
 	"bgscan/internal/logger"
@@ -36,7 +35,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// dump Goroutine for DebugInfo
 		if msg.String() == env.KeyCtrlT {
-			dumpGoroutines()
+			logger.DebugInfo("%s", dumpGoroutines())
 		}
 
 		// Overlay back/quit handling
@@ -121,34 +120,57 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// DumpGoroutines logs a filtered view of all goroutines,
-// focusing on potentially blocked states. It also dumps
-// the full goroutine profile at debug level for offline analysis.
+// dumpGoroutines captures all goroutines in suspicious wait states and returns
+// the full formatted dump as a string so callers can log, send, or write it.
 //
-// Call this when you suspect worker leaks or stuck probes.
-func dumpGoroutines() {
-	var buf bytes.Buffer
-
-	count := runtime.NumGoroutine()
-	logger.DebugInfo("=== Goroutine Dump (count=%d) ===", count)
-
-	// Write full goroutine profile into buffer
-	if err := pprof.Lookup("goroutine").WriteTo(&buf, 2); err != nil {
-		logger.DebugError("failed to write goroutine profile: %v", err)
-		return
+// Each entry in the returned string is a complete goroutine block, e.g.:
+//
+//	goroutine 42 [chan receive, 3 minutes]:
+//	net/http.(*persistConn).readLoop(...)
+//	    /usr/local/go/src/net/http/transport.go:2205
+//
+// Call this before and after a probe run and diff the output to find leaks.
+func dumpGoroutines() string {
+	buf := make([]byte, 1<<20)
+	for {
+		n := runtime.Stack(buf, true)
+		if n < len(buf) {
+			buf = buf[:n]
+			break
+		}
+		buf = make([]byte, len(buf)*2)
+	}
+	suspiciousStates := []string{
+		"[chan receive",
+		"[chan send",
+		"[select",
+		"[IO wait",
+		"[sleep",
+		"[semacquire",
+		"[sync.Mutex.Lock",
 	}
 
-	dump := buf.String()
-	lines := strings.SplitSeq(dump, "\n")
-
-	// Filter lines with suspicious wait states
-	for line := range lines {
-		if strings.Contains(line, "[chan receive]") ||
-			strings.Contains(line, "[chan send]") ||
-			strings.Contains(line, "[select]") ||
-			strings.Contains(line, "[IO wait]") ||
-			strings.Contains(line, "[sleep]") {
-			logger.DebugInfo("%s", line)
+	blocks := strings.Split(string(buf), "\n\n")
+	var matched []string
+	for _, block := range blocks {
+		block = strings.TrimSpace(block)
+		if block == "" {
+			continue
+		}
+		for _, state := range suspiciousStates {
+			if strings.Contains(block, state) {
+				matched = append(matched, block)
+				break
+			}
 		}
 	}
+
+	total := runtime.NumGoroutine()
+	header := fmt.Sprintf("=== Goroutine Dump: %d total, %d suspicious ===\n", total, len(matched))
+
+	if len(matched) == 0 {
+		return header + "(none)\n"
+	}
+
+	return header + strings.Join(matched, "\n\n") + "\n"
 }

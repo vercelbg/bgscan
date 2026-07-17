@@ -47,7 +47,7 @@ func (m *Model) Mode() env.Mode     { return m.crudTable.Mode() }
 
 // defaultSelectHandler automatically opens the matching IP details viewer component
 func (m *Model) defaultSelectHandler(file *result.ResultFile) tea.Cmd {
-	ips, err := result.ReadResultFileIPs(file.Path)
+	ips, err := result.ReadResultFile(file.Path, file.Schema)
 	if err != nil {
 		return notice.NewNoticeCmd(m.layout, "Selection", err.Error(), notice.NOTICE_ERROR)
 	}
@@ -56,7 +56,7 @@ func (m *Model) defaultSelectHandler(file *result.ResultFile) tea.Cmd {
 
 // OpenResultIP loads IP results from a result file and opens the IP viewer.
 func (m *Model) OpenResultIP(file result.ResultFile) tea.Cmd {
-	ips, err := result.LoadAll(file.Path, int64(m.maxIPs))
+	ips, err := result.LoadAll(file.Path, file.Schema, m.maxIPs)
 	if err != nil {
 		return notice.NewNoticeCmd(
 			m.layout,
@@ -67,18 +67,12 @@ func (m *Model) OpenResultIP(file result.ResultFile) tea.Cmd {
 	}
 
 	return func() tea.Msg {
-		mode := ipviewer.ShortView
-
-		if file.Type == result.ResultXRAY {
-			mode = ipviewer.FullView
-		}
-
 		return ui.OpenComponentMsg{
 			Component: ipviewer.New(
 				m.layout,
-				fmt.Sprintf("IP Scan [%s]", file.Type.String()),
+				fmt.Sprintf("IP Scan [%s]", file.Schema.Name),
 				ips,
-				mode,
+				file.Schema,
 			),
 		}
 	}

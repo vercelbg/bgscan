@@ -48,7 +48,7 @@ func (p *provider) Columns() []table.Column {
 }
 
 func (p *provider) Load() ([]result.ResultFile, error) {
-	files, err := result.GetResultFiles()
+	files, err := result.GetResultFiles("result")
 	if err != nil {
 		logger.UIError("Failed to load result logs: %v", err)
 		return nil, err
@@ -66,7 +66,7 @@ func (p *provider) RenderRow(item result.ResultFile) table.Row {
 	return table.Row{
 		item.Name,
 		item.CreatedTime.Format("2006-01-02 15:04:05"),
-		item.Type.String(),
+		item.Schema.Name,
 		humanize.Bytes(uint64(item.SizeBytes)),
 	}
 }

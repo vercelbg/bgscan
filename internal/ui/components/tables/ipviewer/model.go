@@ -10,34 +10,15 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
-var ipFullListColumns = []table.Column{
-	{Title: "IP", Width: 20},
-	{Title: "Latency", Width: 15},
-	{Title: "Download", Width: 15},
-	{Title: "Upload", Width: 15},
-}
-
-var ipShortListColumns = []table.Column{
-	{Title: "IP", Width: 80},
-	{Title: "Latency", Width: 20},
-}
-
-type ViewMode string
-
-const (
-	ShortView ViewMode = "ShortView"
-	FullView  ViewMode = "FullView"
-)
-
 // Model represents the main logs menu component.
 type Model struct {
-	id       ui.ComponentID
-	viewMode ViewMode
-	name     string
-	maxRow   uint32
-	table    ui.Component
-	rows     []table.Row
-	layout   *layout.Layout
+	id     ui.ComponentID
+	name   string
+	maxRow uint32
+	table  ui.Component
+	rows   []table.Row
+	schema result.ResultSchema
+	layout *layout.Layout
 }
 
 // ID returns the component's unique identifier.
@@ -56,20 +37,20 @@ func (m *Model) OnClose() tea.Cmd {
 }
 
 // New creates and returns a new logs menu model.
-func New(l *layout.Layout, name string, rows []result.IPScanResult, mode ViewMode) *Model {
-	cols := ipFullListColumns
-	if mode == ShortView {
-		cols = ipShortListColumns
+func New(l *layout.Layout, name string, rows []result.Result, schema result.ResultSchema) *Model {
+	cols := make([]table.Column, 0, 2)
+	for _, col := range schema.Columns {
+		cols = append(cols, table.Column{Title: col.Name, Width: col.Width})
 	}
 	t := table.New(l, table.WithColumns(cols), table.WithRows([]table.Row{}), table.WithMaxWidth(90))
 
 	m := &Model{
-		id:       ui.NewComponentID(),
-		name:     name,
-		maxRow:   10_000,
-		viewMode: mode,
-		layout:   l,
-		table:    t,
+		id:     ui.NewComponentID(),
+		name:   name,
+		maxRow: 10_000,
+		layout: l,
+		table:  t,
+		schema: schema,
 	}
 
 	m.updateRows(rows)
@@ -80,7 +61,7 @@ func (m *Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m *Model) SetRows(rows []result.IPScanResult) {
+func (m *Model) SetRows(rows []result.Result) {
 	m.updateRows(rows)
 }
 

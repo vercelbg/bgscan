@@ -1,10 +1,11 @@
 package xray
 
 import (
-	"bgscan/internal/core/fileutil"
 	"fmt"
 	"net"
 	"path/filepath"
+
+	"bgscan/internal/core/fileutil"
 )
 
 const (

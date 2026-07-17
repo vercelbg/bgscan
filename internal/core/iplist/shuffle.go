@@ -199,9 +199,6 @@ func streamActiveIPsShuffled(ctx context.Context, path string, limit uint64, out
 
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	// FIX: Use full uint64 wraparound if GrandTotal > 2^63.
-	// If it's > 2^63, the next power of 2 is 2^64, which we can't store in a uint64
-	// variable (1 << 64 becomes 0, causing a divide-by-zero panic on modulo).
 	useFullUint64 := indexer.GrandTotal > (uint64(1) << 63)
 
 	var mSize uint64

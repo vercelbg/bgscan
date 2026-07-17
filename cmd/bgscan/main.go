@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
+	"bgscan/internal/core"
 	"bgscan/internal/logger"
 	"bgscan/internal/startup"
 	"bgscan/internal/ui/main/app"
@@ -12,6 +14,10 @@ import (
 )
 
 func main() {
+	if err := core.Init(); err != nil {
+		log.Fatalf("failed to initialize core: %v", err)
+	}
+
 	startup.RunHealthChecks()
 
 	defer logger.CloseAll()

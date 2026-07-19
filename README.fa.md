@@ -30,7 +30,7 @@
 
 این اسکنر برای توسعه‌دهندگان و پژوهشگرانی ساخته شده است که بدون ترک محیط ترمینال و کیبورد، به سرعت، انعطاف‌پذیری و یک تجربه مدرن در ترمینال نیاز دارند.
 
-<img width="1552" height="841" alt="bgscan-ui" src="https://github.com/user-attachments/assets/08a50bc0-186d-45a4-8c27-4bb52a2041ee" />
+<img width="1258" height="690" alt="bgscan" src="https://github.com/user-attachments/assets/998c2c7c-f960-4a71-a022-72d86b13c6fb" />
 
 ---
 

@@ -25,6 +25,10 @@ func ValidateWriter(cfg *config.WriterConfig) map[string]error {
 		errs["BatchSize"] = err
 	}
 
+	if err := checkDirectoryName("ResultDirectory", cfg.ResultBaseDir); err != nil {
+		errs["ResultBaseDir"] = err
+	}
+
 	return errs
 }
 
@@ -40,6 +44,7 @@ func NormalizeWriter(cfg *config.WriterConfig) []Warning {
 
 	fixInt("ChanSize", &cfg.ChanSize, 1, 1_000_000, def.ChanSize, &warns)
 	fixInt("BatchSize", &cfg.BatchSize, 1, 1_000_000, def.BatchSize, &warns)
+	fixDirectoryName("ResultBaseDir", &cfg.ResultBaseDir, def.ResultBaseDir, &warns)
 
 	return warns
 }

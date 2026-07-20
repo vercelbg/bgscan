@@ -135,6 +135,37 @@ func checkPrefix(field, prefix string) error {
 	return nil
 }
 
+// checkDirectoryName verifies that the string is safe to use as a single directory name.
+// It rejects path traversal, nested directories, reserved characters, and invalid filesystem names.
+func checkDirectoryName(field, name string) error {
+	if strings.TrimSpace(name) == "" {
+		return fmt.Errorf("%s must not be empty", field)
+	}
+
+	// Reject filesystem illegal characters and path separators
+	if illegalFilenameRegex.MatchString(name) {
+		return fmt.Errorf("%s contains illegal characters for a directory name", field)
+	}
+
+	// Reject path traversal and special directory names
+	if name == "." || name == ".." {
+		return fmt.Errorf("%s cannot be '.' or '..'", field)
+	}
+
+	// Reject leading/trailing dots and spaces (Windows compatibility)
+	if strings.HasPrefix(name, ".") || strings.HasSuffix(name, ".") ||
+		strings.HasPrefix(name, " ") || strings.HasSuffix(name, " ") {
+		return fmt.Errorf("%s must not start or end with a dot or space", field)
+	}
+
+	// Reject hidden nested paths that may appear after normalization
+	if strings.Contains(name, "..") {
+		return fmt.Errorf("%s cannot contain '..'", field)
+	}
+
+	return nil
+}
+
 // checksHost checks if the host is a valid domain, optionally followed by a path and/or port.
 // Examples: "google.com", "google.com/path", "example.com:8080/api/v1"
 func checkHost(field, host string) error {
@@ -229,15 +260,6 @@ func fixUint16(field string, v *uint16, min, max, def uint16, warns *[]Warning) 
 	}
 }
 
-// I use DurationMS
-// func fixDuration(field string, v *time.Duration, min, max, def time.Duration, warns *[]Warning) {
-// 	if err := checkDuration(field, *v, min, max); err != nil {
-// 		old := *v
-// 		*v = def
-// 		*warns = append(*warns, Warning{field, old, def, err.Error() + " → default"})
-// 	}
-// }
-
 func fixString(field string, v *string, def string, warns *[]Warning) {
 	if err := checkString(field, *v); err != nil {
 		old := *v
@@ -331,6 +353,14 @@ func fixPubKey(field string, v *string, def string, warns *[]Warning) {
 // fixPrefix auto-corrects an invalid prefix to the default value.
 func fixPrefix(field string, v *string, def string, warns *[]Warning) {
 	if err := checkPrefix(field, *v); err != nil {
+		old := *v
+		*v = def
+		*warns = append(*warns, Warning{field, old, def, err.Error() + " → default"})
+	}
+}
+
+func fixDirectoryName(field string, v *string, def string, warns *[]Warning) {
+	if err := checkDirectoryName(field, *v); err != nil {
 		old := *v
 		*v = def
 		*warns = append(*warns, Warning{field, old, def, err.Error() + " → default"})

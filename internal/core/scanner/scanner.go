@@ -23,8 +23,6 @@ import (
 	"bgscan/internal/logger"
 )
 
-const baseResultDir = "result"
-
 //
 // ────────────────────────────────────────────────────────────────
 // StageConfig
@@ -210,7 +208,7 @@ func (s *Scanner) Close() error {
 func (s *Scanner) BuildICMPStage(ctx context.Context) (StageConfig, error) {
 	cfg := config.GetICMP()
 
-	file, err := result.BuildResultFilePath(baseResultDir, icmpprobe.Schema, cfg.PrefixOutput)
+	file, err := result.BuildResultFilePath(icmpprobe.Schema, cfg.PrefixOutput)
 	if err != nil {
 		return StageConfig{}, err
 	}
@@ -236,7 +234,7 @@ func (s *Scanner) BuildICMPStage(ctx context.Context) (StageConfig, error) {
 func (s *Scanner) BuildTCPStage(ctx context.Context) (StageConfig, error) {
 	cfg := config.GetTCP()
 
-	file, err := result.BuildResultFilePath(baseResultDir, tcpprobe.Schema, cfg.PrefixOutput)
+	file, err := result.BuildResultFilePath(tcpprobe.Schema, cfg.PrefixOutput)
 	if err != nil {
 		return StageConfig{}, err
 	}
@@ -259,7 +257,7 @@ func (s *Scanner) BuildTCPStage(ctx context.Context) (StageConfig, error) {
 func (s *Scanner) BuildHTTPStage(ctx context.Context) (StageConfig, error) {
 	cfg := config.GetHTTP()
 
-	file, err := result.BuildResultFilePath(baseResultDir, httpprobe.Schema, cfg.PrefixOutput)
+	file, err := result.BuildResultFilePath(httpprobe.Schema, cfg.PrefixOutput)
 	if err != nil {
 		return StageConfig{}, err
 	}
@@ -307,7 +305,7 @@ func isHTTP3(version string) bool {
 func (s *Scanner) BuildXrayStage(ctx context.Context, template string) (StageConfig, error) {
 	cfg := config.GetXray()
 
-	file, err := result.BuildResultFilePath(baseResultDir, xrayprobe.Schema, cfg.PrefixOutput)
+	file, err := result.BuildResultFilePath(xrayprobe.Schema, cfg.PrefixOutput)
 	if err != nil {
 		return StageConfig{}, err
 	}
@@ -333,7 +331,7 @@ func (s *Scanner) BuildXrayStage(ctx context.Context, template string) (StageCon
 func (s *Scanner) BuildResolveStage(ctx context.Context) (StageConfig, error) {
 	cfg := config.GetDNS().Resolver
 
-	file, err := result.BuildResultFilePath(baseResultDir, resolveprobe.Schema, cfg.PrefixOutput)
+	file, err := result.BuildResultFilePath(resolveprobe.Schema, cfg.PrefixOutput)
 	if err != nil {
 		return StageConfig{}, err
 	}
@@ -376,7 +374,7 @@ func (s *Scanner) BuildDNSTTStage(ctx context.Context) (StageConfig, error) {
 	transport := config.GetDNS().Resolver.Protocol
 	port := config.GetDNS().Resolver.Port
 
-	file, err := result.BuildResultFilePath(baseResultDir, dnsttprobe.Schema, cfg.PrefixOutput)
+	file, err := result.BuildResultFilePath(dnsttprobe.Schema, cfg.PrefixOutput)
 	if err != nil {
 		return StageConfig{}, err
 	}
@@ -409,7 +407,7 @@ func (s *Scanner) BuildSlipStreamStage(ctx context.Context) (StageConfig, error)
 	cfg := config.GetDNS().SlipStream
 	port := config.GetDNS().Resolver.Port
 
-	file, err := result.BuildResultFilePath(baseResultDir, slipstreamprobe.Schema, cfg.PrefixOutput)
+	file, err := result.BuildResultFilePath(slipstreamprobe.Schema, cfg.PrefixOutput)
 	if err != nil {
 		return StageConfig{}, err
 	}

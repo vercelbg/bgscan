@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"bgscan/internal/core/config"
 	"bgscan/internal/core/fileutil"
 )
 
@@ -66,15 +67,6 @@ func (r *ResultRegistry) Get(directory string) (ResultSchema, bool) {
 	return ResultSchema{}, false
 }
 
-// MustGet retrieves a schema by its Directory, panicking if not found.
-func (r *ResultRegistry) MustGet(directory string) ResultSchema {
-	schema, ok := r.Get(directory)
-	if !ok {
-		panic(fmt.Sprintf("result: no schema registered for directory %q", directory))
-	}
-	return schema
-}
-
 // All returns all registered schemas, sorted by Directory for deterministic ordering.
 func (r *ResultRegistry) All() []ResultSchema {
 	r.mu.RLock()
@@ -111,13 +103,19 @@ func (r *ResultRegistry) Unregister(directory string) bool {
 	return false
 }
 
-// FindResultFiles returns metadata for all result CSV files
-// belonging to the provided schemas. At least one schema is required.
-func FindResultFiles(baseDir string, schemas ...ResultSchema) ([]ResultFile, error) {
+// resultBaseDir returns the configured base directory for all result files.
+func resultBaseDir() string {
+	return config.GetWriter().ResultBaseDir
+}
+
+// FindResultFiles returns metadata for all result CSV files belonging to
+// the provided schemas. At least one schema is required.
+func FindResultFiles(schemas ...ResultSchema) ([]ResultFile, error) {
 	if len(schemas) == 0 {
 		return nil, errors.New("result: at least one schema is required")
 	}
 
+	baseDir := resultBaseDir()
 	var results []ResultFile
 
 	for _, schema := range schemas {
@@ -159,12 +157,12 @@ func FindResultFiles(baseDir string, schemas ...ResultSchema) ([]ResultFile, err
 
 // GetResultFiles returns all result files across every schema registered
 // in DefaultRegistry.
-func GetResultFiles(baseDir string) ([]ResultFile, error) {
+func GetResultFiles() ([]ResultFile, error) {
 	schemas := DefaultRegistry.All()
 	if len(schemas) == 0 {
 		return nil, nil
 	}
-	return FindResultFiles(baseDir, schemas...)
+	return FindResultFiles(schemas...)
 }
 
 // ReadResultFile reads metadata for a single result file.
@@ -194,15 +192,15 @@ func NormalizeResultFileName(name string) string {
 	return base
 }
 
-// BuildResultFilePath creates a new output path under baseDir using the
-// provided schema and filename prefix. The target directory is created
-// if it does not already exist.
-func BuildResultFilePath(baseDir string, schema ResultSchema, prefix string) (string, error) {
+// BuildResultFilePath creates a new output path using the provided schema
+// and filename prefix. The base directory is read from config. The target
+// directory is created if it does not already exist.
+func BuildResultFilePath(schema ResultSchema, prefix string) (string, error) {
 	if prefix == "" {
 		return "", errors.New("result: prefix cannot be empty")
 	}
 
-	dir := filepath.Join(baseDir, schema.Directory)
+	dir := filepath.Join(resultBaseDir(), schema.Directory)
 	if err := os.MkdirAll(dir, resultDirPerm); err != nil {
 		return "", fmt.Errorf("create result directory %q: %w", dir, err)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"bgscan/internal/core/config"
@@ -19,6 +20,7 @@ import (
 	"bgscan/internal/core/scanner/probe/slipstreamprobe"
 	"bgscan/internal/core/scanner/probe/tcpprobe"
 	"bgscan/internal/core/scanner/probe/xrayprobe"
+	"bgscan/internal/logger"
 )
 
 const baseResultDir = "result"
@@ -51,7 +53,10 @@ func (s *StageConfig) AddHooks(h engine.ScanHooks) *StageConfig {
 type Scanner struct {
 	ctx    context.Context
 	cancel context.CancelFunc
+
+	mu     sync.Mutex
 	closed bool
+	wg     sync.WaitGroup // Tracks the active scan goroutine
 
 	pause  *engine.PauseController
 	input  string
@@ -90,6 +95,9 @@ func (s *Scanner) AddStage(stage StageConfig) {
 //
 
 func (s *Scanner) Run() error {
+	s.wg.Add(1)
+	defer s.wg.Done()
+
 	if s.closed {
 		return errors.New("scanner already closed")
 	}
@@ -162,14 +170,34 @@ func (s *Scanner) Resume()                       { s.pause.Resume() }
 func (s *Scanner) IsPaused() bool                { return s.pause.IsPaused() }
 func (s *Scanner) PausedDuration() time.Duration { return s.pause.PausedDuration() }
 
-func (s *Scanner) Close() {
+func (s *Scanner) Close() error {
+	s.mu.Lock()
 	if s.closed {
-		return
+		s.mu.Unlock()
+		return nil
 	}
+
 	s.closed = true
+	s.mu.Unlock()
 
 	if s.cancel != nil {
 		s.cancel()
+	}
+
+	done := make(chan struct{})
+	go func() {
+		s.wg.Wait()
+		close(done)
+	}()
+
+	timeout := 10 * time.Second
+
+	select {
+	case <-done:
+		return nil
+	case <-time.After(timeout):
+		logger.CoreError("Scanner.Close() timed out after %v, forcing shutdown (goroutine leak possible)", timeout)
+		return errors.New("timed out waiting for scanner goroutines to shut down")
 	}
 }
 

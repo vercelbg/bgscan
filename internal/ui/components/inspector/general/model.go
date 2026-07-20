@@ -44,6 +44,7 @@ const (
 	descMergeFlushInterval = "The interval in milliseconds for merging delta results into the main result file."
 	descChanSize           = "The capacity of the internal channel used by scanner workers to send IP scan results to the writer goroutine."
 	descWriterBatchSize    = "The initial capacity of the in-memory batch used to accumulate IP scan results before flushing to disk."
+	descResultDirectory    = "The directory name used to store scan results. The directory is created inside the project root (for example, 'result' stores results in './result')."
 )
 
 type Model struct {
@@ -240,6 +241,21 @@ func New(l *layout.Layout, name string) *Model {
 		},
 		func(n int) { cfgW.BatchSize = n }, saveWri)
 
+	resultDirectory := textinput.New(
+		l, "Enter Result Directory",
+		textinput.WithValue(cfgW.ResultBaseDir),
+		textinput.WithValidation(func(v string) error {
+			tmp := *cfgW
+			tmp.ResultBaseDir = v
+			return fieldErr(validate.ValidateWriter(&tmp), "ResultDirectory")
+		}),
+		textinput.WithFocus(),
+		textinput.WithOnSubmit(func(v string) tea.Cmd {
+			cfgW.ResultBaseDir = v
+			return saveGen()
+		}),
+	)
+
 	fields := []inspector.Field{
 		{Name: "Status Interval", Description: descStatusInterval, Group: groupGeneral, Input: inspector.Adapt(statusInterval), Visible: alwaysVisible, Format: inspector.FormatDurationMS},
 		{Name: "Stop After Found", Description: descStopAfterFound, Group: groupGeneral, Input: inspector.Adapt(stopAfterFound), Visible: alwaysVisible, Format: inspector.FormatIntOrUnlimited},
@@ -249,6 +265,7 @@ func New(l *layout.Layout, name string) *Model {
 		{Name: "Max IPs Per Stage", Description: descMaxIPsPerStage, Group: groupGeneral, Input: inspector.Adapt(maxIPsPerStage), Visible: visibleWhenMode(cfgG, pipelineStreaming), Format: inspector.FormatInt},
 		{Name: "Batch Size", Description: descBatchSize, Group: groupGeneral, Input: inspector.Adapt(batchSize), Visible: visibleWhenMode(cfgG, pipelineBatch), Format: inspector.FormatInt},
 
+		{Name: "Result Directory", Description: descResultDirectory, Group: groupWriter, Input: inspector.Adapt(resultDirectory), Visible: alwaysVisible},
 		{Name: "Merge Flush Interval", Description: descMergeFlushInterval, Group: groupWriter, Input: inspector.Adapt(mergeFlushInterval), Visible: alwaysVisible, Format: inspector.FormatDurationMS},
 		{Name: "Channel Size", Description: descChanSize, Group: groupWriter, Input: inspector.Adapt(chanSize), Visible: alwaysVisible, Format: inspector.FormatInt},
 		{Name: "Batch Size", Description: descWriterBatchSize, Group: groupWriter, Input: inspector.Adapt(writerBatchSize), Visible: alwaysVisible, Format: inspector.FormatInt},

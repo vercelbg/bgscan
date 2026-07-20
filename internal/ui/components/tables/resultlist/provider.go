@@ -48,7 +48,7 @@ func (p *provider) Columns() []table.Column {
 }
 
 func (p *provider) Load() ([]result.ResultFile, error) {
-	files, err := result.GetResultFiles("result")
+	files, err := result.GetResultFiles()
 	if err != nil {
 		logger.UIError("Failed to load result logs: %v", err)
 		return nil, err

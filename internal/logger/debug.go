@@ -16,6 +16,10 @@ func DebugInfo(msg string, args ...any) {
 	debugLogger.write(LevelInfo, msg, args...)
 }
 
+func DebugWarn(msg string, args ...any) {
+	debugLogger.write(LevelWarning, msg, args...)
+}
+
 func DebugError(msg string, args ...any) {
 	debugLogger.write(LevelError, msg, args...)
 }

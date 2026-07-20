@@ -231,7 +231,6 @@ func processBatch(ctx context.Context, batch []string, execs []*stageExecutor, p
 func executeBatch(ctx context.Context, batch []string, exec *stageExecutor, pause *PauseController) []string {
 	workers := getWorkerCount(exec.stage.Workers)
 	input := make(chan string, workers*2)
-
 	go func() {
 		defer close(input)
 		for _, ip := range batch {
@@ -245,7 +244,7 @@ func executeBatch(ctx context.Context, batch []string, exec *stageExecutor, paus
 
 	var (
 		mu  sync.Mutex
-		out []string
+		out = make([]string, 0, len(batch))
 	)
 
 	runWorkerPool(ctx, workers, pause, input, func(ip string) {

@@ -1,12 +1,14 @@
 package xray
 
 import (
-	"bgscan/internal/core/fileutil"
-	"bgscan/internal/core/process"
 	"context"
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
+
+	"bgscan/internal/core/fileutil"
+	"bgscan/internal/core/process"
 )
 
 var xrayPaths = []string{
@@ -43,7 +45,7 @@ func XrayVersion() (string, error) {
 //
 // If the configuration is invalid, the error returned will contain
 // the full output produced by Xray to help diagnose the issue.
-func ValidateConfig(configPath string) error {
+func ValidateConfig(ctx context.Context, configPath string) error {
 	if !fileutil.CheckFileExists(configPath) {
 		return fmt.Errorf("config file does not exist: %s", configPath)
 	}
@@ -53,11 +55,16 @@ func ValidateConfig(configPath string) error {
 		return err
 	}
 
-	cmd := exec.Command(xrayBin, "-c", configPath, "--test")
-	output, err := cmd.CombinedOutput()
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
+	cmd := exec.CommandContext(ctx, xrayBin, "-c", configPath, "--test")
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("xray config validation failed: %s", output)
+		if ctx.Err() == context.DeadlineExceeded {
+			return fmt.Errorf("xray config validation timed out after 10s (partial output: %s)", string(output))
+		}
+		return fmt.Errorf("xray config validation failed: %s", string(output))
 	}
 
 	return nil
@@ -71,7 +78,6 @@ func ValidateConfig(configPath string) error {
 // The provided context controls the lifetime of the process. If the
 // context is canceled, the Xray process will be terminated automatically.
 func StartXray(ctx context.Context, configPath string) (*process.Process, error) {
-
 	if !fileutil.CheckFileExists(configPath) {
 		return nil, fmt.Errorf("config file does not exist: %s", configPath)
 	}

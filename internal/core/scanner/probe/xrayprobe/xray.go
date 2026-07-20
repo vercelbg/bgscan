@@ -97,7 +97,7 @@ func (p *XrayProbe) Run(ctx context.Context, ip string) (result.Result, error) {
 		}
 	}()
 
-	if err := xray.ValidateConfig(configPath); err != nil {
+	if err := xray.ValidateConfig(ctx, configPath); err != nil {
 		return nil, fmt.Errorf("invalid xray config: %w", err)
 	}
 

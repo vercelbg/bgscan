@@ -1,6 +1,7 @@
 package xray
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -237,7 +238,7 @@ func ValidateOutbound(outbound string) error {
 		}
 	}()
 
-	return ValidateConfig(configPath)
+	return ValidateConfig(context.Background(), configPath)
 }
 
 // loadOutboundFileMetadata reads an outbound template and extracts
